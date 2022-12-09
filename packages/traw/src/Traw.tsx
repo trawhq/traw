@@ -49,13 +49,15 @@ const Traw = ({ app, id, records = [], onAddRecord }: TrawProps) => {
         data-testid="traw"
         className="flex flex-1 flex-col overflow-hidden bg-traw-sky"
       >
-        <div className="h-14 m-2 mb-0">
-          <Header
-            title={"Test Document"}
-            canEdit={true}
-            handleChangeTitle={() => null}
-            Room={<div />}
-          />
+        <div className="h-14 m-0 sm:m-2 mb-0">
+          <div className="flex flex-row h-14 pl-3 bg-white items-center rounded:none sm:rounded-2xl shadow-[0_10px_60px_rgba(189,188,249,0.5)]">
+            <Header
+              title={"Test Document"}
+              canEdit={true}
+              handleChangeTitle={() => null}
+              Room={<div />}
+            />
+          </div>
         </div>
 
         <div className="flex flex-1 flex-col sm:flex-row">
