@@ -1,8 +1,7 @@
-import { TDSnapshot, TDToolType, TldrawCommand } from '@tldraw/tldraw';
+import { TDSnapshot, TDToolType, TldrawApp, TldrawCommand } from '@tldraw/tldraw';
 import createVanilla, { StoreApi } from 'zustand/vanilla';
 import { migrateRecords } from 'components/utils/migrate';
 import { Record, TrawSnapshot } from 'types';
-import { TrawCanvasApp } from 'state/TrawCanvasApp';
 
 export interface TRCallbacks {
   /**
@@ -10,7 +9,7 @@ export interface TRCallbacks {
    * @param app The Traw app.
    * @param record The record that was created.
    */
-  onRecordsCreate?: (app: TrawCanvasApp, records: Record[]) => void;
+  onRecordsCreate?: (app: TldrawApp, records: Record[]) => void;
 }
 
 export class TrawApp {
@@ -18,7 +17,7 @@ export class TrawApp {
    * The Tldraw app. (https://tldraw.com)
    * This is used to create and edit slides.
    */
-  app: TrawCanvasApp;
+  app: TldrawApp;
 
   callbacks: TRCallbacks;
 
@@ -39,11 +38,8 @@ export class TrawApp {
   private _actionStartTime: number | undefined;
 
   constructor(callbacks = {} as TRCallbacks) {
-    this.app = new TrawCanvasApp('', {
-      onSessionStart: this.setActionStartTime,
-    });
-
-    this.app.onCommand = this.recordCommand;
+    // dummy app
+    this.app = new TldrawApp();
 
     this._state = {
       records: [],
@@ -51,6 +47,12 @@ export class TrawApp {
     this.store = createVanilla(() => this._state);
 
     this.callbacks = callbacks;
+  }
+
+  registerApp(app: TldrawApp) {
+    app.onCommand = this.recordCommand;
+
+    this.app = app;
   }
 
   selectTool(tool: TDToolType) {
