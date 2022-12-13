@@ -7,5 +7,10 @@ module.exports = async ({ config, mode }) => {
     type: "javascript/auto",
   });
 
+  config.resolve.modules = [
+    path.resolve(__dirname, "..", "src"),
+    "node_modules",
+  ]
+  
   return config;
 };

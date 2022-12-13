@@ -1,8 +1,6 @@
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 import React from 'react';
 import { Header } from './';
-import Room, { RoomProps } from './Room/Room';
-import { Default as RoomStory } from './Room/Room.stories';
 
 export default {
   title: 'Traw/Header',
@@ -12,7 +10,7 @@ export default {
     title: 'My Traw',
     canEdit: true,
 
-    Room: <Room {...(RoomStory.args as RoomProps)} />,
+    Room: <div />,
   },
 } as ComponentMeta<typeof Header>;
 
