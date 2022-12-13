@@ -10,7 +10,7 @@ export const Slide = () => {
 
   const app = useTrawApp();
   const { appState, document } = app.useSlidesStore();
-  const { activeTool, currentPageId } = appState;
+  const { currentPageId } = appState;
 
   const pages = document.pages;
 

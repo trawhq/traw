@@ -79,7 +79,7 @@ export class TrawApp {
     this._actionStartTime = Date.now();
   };
 
-  private handleZoom = (state: TDSnapshot) => {};
+  // private handleZoom = (state: TDSnapshot) => {};
 
   private recordCommand = (state: TDSnapshot, command: TldrawCommand) => {
     const records: Record[] = [];
