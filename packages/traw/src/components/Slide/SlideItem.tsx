@@ -60,33 +60,6 @@ const SlideItem = () => {
 
   const showDashedBrush = settings.isCadSelectMode ? !appState.selectByContain : appState.selectByContain;
 
-  // Custom theme, based on darkmode
-  const theme = React.useMemo(() => {
-    const { selectByContain } = appState;
-    const { isDarkMode, isCadSelectMode } = settings;
-
-    if (isDarkMode) {
-      const brushBase = isCadSelectMode ? (selectByContain ? '69, 155, 255' : '105, 209, 73') : '180, 180, 180';
-      return {
-        brushFill: `rgba(${brushBase}, ${isCadSelectMode ? 0.08 : 0.05})`,
-        brushStroke: `rgba(${brushBase}, ${isCadSelectMode ? 0.5 : 0.25})`,
-        brushDashStroke: `rgba(${brushBase}, .6)`,
-        selected: 'rgba(38, 150, 255, 1.000)',
-        selectFill: 'rgba(38, 150, 255, 0.05)',
-        background: '#212529',
-        foreground: '#49555f',
-      };
-    }
-
-    const brushBase = isCadSelectMode ? (selectByContain ? '0, 89, 242' : '51, 163, 23') : '0,0,0';
-
-    return {
-      brushFill: `rgba(${brushBase}, ${isCadSelectMode ? 0.08 : 0.05})`,
-      brushStroke: `rgba(${brushBase}, ${isCadSelectMode ? 0.4 : 0.25})`,
-      brushDashStroke: `rgba(${brushBase}, .6)`,
-    };
-  }, [appState, settings]);
-
   const isInSession = tldrawApp.session !== undefined;
 
   // Hide bounds when not using the select tool, or when the only selected shape has handles
@@ -117,7 +90,6 @@ const SlideItem = () => {
         eraseLine={appState.eraseLine}
         users={room?.users}
         userId={room?.userId}
-        theme={theme}
         meta={meta}
         hideBounds={hideBounds}
         hideHandles={hideHandles}

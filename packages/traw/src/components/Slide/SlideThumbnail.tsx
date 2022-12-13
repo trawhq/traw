@@ -14,17 +14,7 @@ const SLideThumbnail = ({ page }: SlideThumbnailProps) => {
   const app = useTrawApp();
   const state = app.useSlidesStore();
 
-  const { settings, appState, document } = state;
-  const theme = React.useMemo(() => {
-    const { selectByContain } = appState;
-    const brushBase = selectByContain;
-
-    return {
-      brushFill: `rgba(${brushBase}, ${0.05})`,
-      brushStroke: `rgba(${brushBase}, ${0.25})`,
-      brushDashStroke: `rgba(${brushBase}, .6)`,
-    };
-  }, [appState]);
+  const { settings, document } = state;
 
   const meta = React.useMemo(() => {
     return { isDarkMode: settings.isDarkMode };
@@ -36,7 +26,6 @@ const SLideThumbnail = ({ page }: SlideThumbnailProps) => {
         shapeUtils={shapeUtils}
         page={page}
         hideBounds={true}
-        theme={theme}
         meta={meta}
         pageState={{
           id: page.id,
