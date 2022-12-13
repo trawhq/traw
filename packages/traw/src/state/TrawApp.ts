@@ -50,7 +50,15 @@ export class TrawApp {
   }
 
   registerApp(app: TldrawApp) {
-    app.onCommand = this.recordCommand;
+    app.callbacks = {
+      onCommand: this.recordCommand,
+      // onSessionEnd: () => {
+      //   console.log('Session ended');
+      // },
+      // onPatch: () => {
+      //   console.log('onPatch');
+      // },
+    };
 
     this.app = app;
   }
@@ -71,7 +79,9 @@ export class TrawApp {
     this._actionStartTime = Date.now();
   };
 
-  recordCommand = (state: TDSnapshot, command: TldrawCommand) => {
+  private handleZoom = (state: TDSnapshot) => {};
+
+  private recordCommand = (state: TDSnapshot, command: TldrawCommand) => {
     const records: Record[] = [];
     console.log(command);
     switch (command.id) {
