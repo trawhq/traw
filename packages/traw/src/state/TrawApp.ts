@@ -1,19 +1,13 @@
 import { TDSnapshot, TDToolType, TldrawApp, TldrawCommand } from '@tldraw/tldraw';
-import createVanilla, { StoreApi } from 'zustand/vanilla';
-import { migrateRecords } from 'components/utils/migrate';
-import { Record, TrawSnapshot, TDCamera, TRCamera, TRViewport } from 'types';
-import { DEFAULT_CAMERA, SLIDE_HEIGHT, SLIDE_RATIO, SLIDE_WIDTH } from '../constants';
-import { nanoid } from 'nanoid';
 import debounce from 'lodash/debounce';
+import { nanoid } from 'nanoid';
+import { Record, TDCamera, TrawSnapshot, TRCamera, TRViewport } from 'types';
+import createVanilla, { StoreApi } from 'zustand/vanilla';
+import { DEFAULT_CAMERA, SLIDE_HEIGHT, SLIDE_RATIO, SLIDE_WIDTH } from '../constants';
 
-export interface TRCallbacks {
-  /**
-   * Called when a new record is created.
-   * @param app The Traw app.
-   * @param record The record that was created.
-   */
-  onRecordsCreate?: (app: TldrawApp, records: Record[]) => void;
-}
+import { CreateRecordsEvent, EventTypeHandlerMap, TrawEventHandler, TrawEventType } from 'state/events';
+import { ActionType } from 'types';
+import { TrawAppOptions } from './TrawAppOptions';
 
 export const convertCameraTRtoTD = (camera: TRCamera, viewport: TRViewport): TDCamera => {
   const ratio = viewport.width / viewport.height;
@@ -70,8 +64,6 @@ export class TrawApp {
    */
   app: TldrawApp;
 
-  callbacks: TRCallbacks;
-
   editorId: string;
 
   viewportSize = {
@@ -90,32 +82,36 @@ export class TrawApp {
   private _state: TrawSnapshot;
 
   /**
+   * Event handlers
+   * @private
+   */
+  private eventHandlersMap = new Map<TrawEventType, TrawEventHandler[]>();
+
+  /**
    * The time the current action started.
    * This is used to calculate the duration of the record.
    */
   private _actionStartTime: number | undefined;
 
-  constructor(editorId: string, callbacks = {} as TRCallbacks) {
+  constructor({ user, document, records = [] }: TrawAppOptions) {
     // dummy app
     this.app = new TldrawApp();
 
-    this.editorId = editorId || 'editor';
+    this.editorId = user.id;
 
     this._state = {
-      records: [],
       viewport: {
         width: 0,
         height: 0,
       },
       camera: {
-        [this.editorId]: {
-          page: DEFAULT_CAMERA,
-        },
+        [this.editorId]: {},
       },
+      user,
+      document,
+      records,
     };
     this.store = createVanilla(() => this._state);
-
-    this.callbacks = callbacks;
   }
 
   registerApp(app: TldrawApp) {
@@ -194,7 +190,12 @@ export class TrawApp {
       },
       origin: '',
     };
-    this.callbacks.onRecordsCreate?.(this.app, [record]);
+
+    const createRecordsEvent: CreateRecordsEvent = {
+      tldrawApp: this.app,
+      records: [record],
+    };
+    this.emit(TrawEventType.CreateRecords, createRecordsEvent);
     this.store.setState((state) => {
       return {
         ...state,
@@ -222,38 +223,49 @@ export class TrawApp {
   // private handleZoom = (state: TDSnapshot) => {};
 
   private recordCommand = (state: TDSnapshot, command: TldrawCommand) => {
+    const user = this.store.getState().user;
+    const document = this.store.getState().document;
     const records: Record[] = [];
     switch (command.id) {
       case 'change_page':
         if (command.after.appState)
           records.push({
             type: command.id,
+            id: nanoid(),
+            user: user.id,
             data: {
               id: command.after.appState.currentPageId,
             },
             start: this._actionStartTime ? this._actionStartTime : 0,
             end: Date.now(),
-          } as Record);
+            origin: document.id,
+          });
         break;
       case 'create_page': {
         if (!command.after.document || !command.after.document.pages) break;
         const pageId = Object.keys(command.after.document.pages)[0];
         records.push({
           type: command.id,
+          id: nanoid(),
+          user: user.id,
           data: {
             id: pageId,
           },
           start: Date.now() - 1, // Create page must be before select page
           end: Date.now() - 1,
-        } as Record);
+          origin: document.id,
+        });
         records.push({
           type: 'change_page',
+          id: nanoid(),
+          user: user.id,
           data: {
             id: pageId,
           },
           start: Date.now(),
           end: Date.now(),
-        } as Record);
+          origin: document.id,
+        });
         break;
       }
       case 'delete_page':
@@ -263,19 +275,27 @@ export class TrawApp {
         const pageId = Object.keys(command.after.document.pages)[0];
 
         records.push({
-          type: command.id,
+          type: command.id as ActionType,
+          id: nanoid(),
+          user: user.id,
           data: command.after.document.pages[pageId],
           slideId: pageId,
-          start: this._actionStartTime ? this._actionStartTime : 0,
+          start: this._actionStartTime || new Date().getTime(),
           end: Date.now(),
-        } as Record);
+          origin: document.id,
+        });
         break;
       }
     }
 
     if (!records.length) return;
 
-    this.callbacks.onRecordsCreate?.(this.app, records);
+    const createRecordsEvent: CreateRecordsEvent = {
+      tldrawApp: this.app,
+      records,
+    };
+    this.emit(TrawEventType.CreateRecords, createRecordsEvent);
+
     this.store.setState((state) => {
       return {
         ...state,
@@ -286,8 +306,6 @@ export class TrawApp {
   };
 
   addRecords = (records: Record[]) => {
-    records = migrateRecords(records);
-
     records.forEach((record) => {
       switch (record.type) {
         case 'create_page':
@@ -409,4 +427,26 @@ export class TrawApp {
     this.app.changePage(id);
     this.syncCamera();
   };
+
+  /*
+   * Event handlers
+   */
+  on<K extends keyof EventTypeHandlerMap>(eventType: K, handler: EventTypeHandlerMap[K]) {
+    const handlers = this.eventHandlersMap.get(eventType) || [];
+    handlers.push(handler);
+    this.eventHandlersMap.set(eventType, handlers);
+  }
+
+  off<K extends keyof EventTypeHandlerMap>(eventType: K, handler: EventTypeHandlerMap[K]) {
+    const handlers = this.eventHandlersMap.get(eventType) || [];
+    this.eventHandlersMap.set(
+      eventType,
+      handlers.filter((h: TrawEventHandler) => h !== handler),
+    );
+  }
+
+  emit<K extends keyof EventTypeHandlerMap>(eventType: K, event: Parameters<EventTypeHandlerMap[K]>[0]) {
+    const handlers = this.eventHandlersMap.get(eventType) || [];
+    handlers.forEach((h: TrawEventHandler) => h(event));
+  }
 }

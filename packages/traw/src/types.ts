@@ -59,4 +59,17 @@ export type TrawSnapshot = {
       [slideId: string]: TRCamera;
     };
   };
+  document: TrawDocument;
+  user: TrawUser;
+};
+
+export type TrawUser = {
+  id: string;
+  name: string;
+  profileUrl?: string;
+};
+
+export type TrawDocument = {
+  id: string;
+  name: string;
 };
