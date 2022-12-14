@@ -18,7 +18,7 @@ export const convertCameraTRtoTD = (camera: TRCamera, viewport: TRViewport): TDC
   if (ratio > SLIDE_RATIO) {
     // wider than slide
     const absoluteHeight = SLIDE_HEIGHT / camera.zoom;
-    const zoom = viewport.width / absoluteHeight;
+    const zoom = viewport.height / absoluteHeight;
     return {
       point: [-camera.center.x + viewport.width / zoom / 2, -camera.center.y + viewport.height / zoom / 2],
       zoom,
@@ -90,10 +90,11 @@ export class TrawApp {
   registerApp(app: TldrawApp) {
     app.callbacks = {
       onCommand: this.recordCommand,
-      onPatch: (app, patch) => {
+      onPatch: (app, patch, reason) => {
+        if (reason === 'viewport_change') return;
         const camera = patch.document?.pageStates?.page?.camera as TDCamera;
         if (camera) {
-          this.handleViewportChange(camera);
+          this.handleCameraChange(camera);
         }
       },
     };
@@ -115,7 +116,7 @@ export class TrawApp {
     this.app.setCamera(camera.point, camera.zoom, 'viewport_change');
   };
 
-  handleViewportChange = (camera: TDCamera) => {
+  handleCameraChange = (camera: TDCamera) => {
     console.log(camera);
   };
 

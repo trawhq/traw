@@ -40,7 +40,7 @@ export type TDCamera = TDSnapshot['document']['pageStates']['page']['camera'];
 export type TRViewport = {
   width: number;
   height: number;
-}
+};
 
 export type TRCamera = {
   center: {
