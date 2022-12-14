@@ -2,7 +2,8 @@ import { TDSnapshot, TDToolType, TldrawApp, TldrawCommand } from '@tldraw/tldraw
 import createVanilla, { StoreApi } from 'zustand/vanilla';
 import { migrateRecords } from 'components/utils/migrate';
 import { Record, TrawSnapshot, TDCamera, TRCamera, TRViewport } from 'types';
-import { SLIDE_HEIGHT, SLIDE_RATIO, SLIDE_WIDTH } from '../constants';
+import { DEFAULT_CAMERA, SLIDE_HEIGHT, SLIDE_RATIO, SLIDE_WIDTH } from '../constants';
+import { nanoid } from 'nanoid';
 
 export interface TRCallbacks {
   /**
@@ -79,7 +80,9 @@ export class TrawApp {
         height: 0,
       },
       camera: {
-        [this.editorId]: {},
+        [this.editorId]: {
+          page: DEFAULT_CAMERA,
+        },
       },
     };
     this.store = createVanilla(() => this._state);
@@ -91,7 +94,7 @@ export class TrawApp {
     app.callbacks = {
       onCommand: this.recordCommand,
       onPatch: (app, patch, reason) => {
-        if (reason === 'viewport_change') return;
+        if (reason === 'sync_camera') return;
         const camera = patch.document?.pageStates?.page?.camera as TDCamera;
         if (camera) {
           this.handleCameraChange(camera);
@@ -112,8 +115,17 @@ export class TrawApp {
         },
       };
     });
-    const camera = convertCameraTRtoTD({ center: { x: 0, y: 0 }, zoom: 1 }, { width, height });
-    this.app.setCamera(camera.point, camera.zoom, 'viewport_change');
+    this.syncCamera();
+  };
+
+  syncCamera = () => {
+    const currentPageId = this.app.appState.currentPageId;
+    const { viewport, camera } = this.store.getState();
+    const trCamera = camera[this.editorId][currentPageId];
+    if (!trCamera) return;
+
+    const tdCamera = convertCameraTRtoTD(trCamera, viewport);
+    this.app.setCamera(tdCamera.point, tdCamera.zoom, 'sync_camera');
   };
 
   handleCameraChange = (camera: TDCamera) => {
@@ -229,6 +241,18 @@ export class TrawApp {
               },
             },
           });
+          this.store.setState((state) => {
+            return {
+              ...state,
+              camera: {
+                ...state.camera,
+                [this.editorId]: {
+                  ...state.camera[this.editorId],
+                  [record.data.id]: DEFAULT_CAMERA,
+                },
+              },
+            };
+          });
           break;
         case 'change_page':
           this.app.patchState({
@@ -272,8 +296,24 @@ export class TrawApp {
     });
   };
 
+  setCamera = (camera: TDCamera, slideId: string) => {};
+
   createSlide = () => {
-    this.app.createPage();
+    const pageId = nanoid();
+    this.store.setState((state) => {
+      return {
+        ...state,
+        camera: {
+          ...state.camera,
+          [this.editorId]: {
+            ...state.camera[this.editorId],
+            [pageId]: DEFAULT_CAMERA,
+          },
+        },
+      };
+    });
+    this.app.createPage(pageId);
+    this.syncCamera();
   };
 
   deleteSlide = () => {
@@ -282,5 +322,6 @@ export class TrawApp {
 
   selectSlide = (id: string) => {
     this.app.changePage(id);
+    this.syncCamera();
   };
 }

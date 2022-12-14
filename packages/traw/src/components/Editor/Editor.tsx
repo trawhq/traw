@@ -19,14 +19,14 @@ export const Editor = () => {
     return () => {
       removeEventListener('resize', handleResize);
     };
-  }, [TrawApp]);
+  }, [handleResize]);
 
   const handleMount = useCallback(
     (tldraw: any) => {
       TrawApp.registerApp(tldraw);
       handleResize();
     },
-    [TrawApp],
+    [TrawApp, handleResize],
   );
 
   return (

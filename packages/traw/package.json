@@ -72,6 +72,7 @@
     "@radix-ui/react-tooltip": "^1.0.2",
     "@tldraw/tldraw": "^1.26.3",
     "classnames": "^2.3.2",
+    "nanoid": "^4.0.0",
     "zustand": "^4.1.5"
   },
   "peerDependencies": {
