@@ -357,6 +357,7 @@ export class TrawApp {
               },
             };
           });
+          break;
         default: {
           const { data, slideId } = record;
           if (!slideId) break;
