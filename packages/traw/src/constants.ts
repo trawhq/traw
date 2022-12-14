@@ -1,4 +1,4 @@
-import { TRCamera } from "types";
+import { TRCamera } from 'types';
 
 export const SLIDE_WIDTH = 1600;
 export const SLIDE_HEIGHT = 900;

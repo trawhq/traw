@@ -35,6 +35,33 @@ export const convertCameraTRtoTD = (camera: TRCamera, viewport: TRViewport): TDC
   }
 };
 
+export const convertCameraTDtoTR = (camera: TDCamera, viewport: TRViewport): TRCamera => {
+  const ratio = viewport.width / viewport.height;
+  if (ratio > SLIDE_RATIO) {
+    // wider than slide
+    const absoluteHeight = viewport.height / camera.zoom;
+    const zoom = viewport.height / absoluteHeight;
+    return {
+      center: {
+        x: -camera.point[0] + viewport.width / zoom / 2,
+        y: -camera.point[1] + viewport.height / zoom / 2,
+      },
+      zoom,
+    };
+  } else {
+    // taller than slide
+    const absoluteWidth = viewport.width / camera.zoom;
+    const zoom = viewport.width / absoluteWidth;
+    return {
+      center: {
+        x: -camera.point[0] + viewport.width / zoom / 2,
+        y: -camera.point[1] + viewport.height / zoom / 2,
+      },
+      zoom: zoom,
+    };
+  }
+};
+
 export class TrawApp {
   /**
    * The Tldraw app. (https://tldraw.com)
@@ -129,7 +156,21 @@ export class TrawApp {
   };
 
   handleCameraChange = (camera: TDCamera) => {
-    console.log(camera);
+    const trawCamera = convertCameraTDtoTR(camera, this.store.getState().viewport);
+    const currentPageId = this.app.appState.currentPageId;
+
+    this.store.setState((state) => {
+      return {
+        ...state,
+        camera: {
+          ...state.camera,
+          [this.editorId]: {
+            ...state.camera[this.editorId],
+            [currentPageId]: trawCamera,
+          },
+        },
+      };
+    });
   };
 
   selectTool(tool: TDToolType) {
@@ -296,7 +337,7 @@ export class TrawApp {
     });
   };
 
-  setCamera = (camera: TDCamera, slideId: string) => {};
+  // setCamera = (camera: TDCamera, slideId: string) => {};
 
   createSlide = () => {
     const pageId = nanoid();
