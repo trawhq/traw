@@ -1,6 +1,5 @@
 import { TDSnapshot, TDToolType, TldrawApp, TldrawCommand } from '@tldraw/tldraw';
 import createVanilla, { StoreApi } from 'zustand/vanilla';
-import { migrateRecords } from 'components/utils/migrate';
 import { ActionType, Record, TrawSnapshot } from 'types';
 import { CreateRecordsEvent, EventTypeHandlerMap, TrawEventHandler, TrawEventType } from 'state/events';
 import { nanoid } from 'nanoid';
@@ -138,7 +137,7 @@ export class TrawApp {
           user: user.id,
           data: command.after.document.pages[pageId],
           slideId: pageId,
-          start: this._actionStartTime ? this._actionStartTime : 0,
+          start: this._actionStartTime || new Date().getTime(),
           end: Date.now(),
           origin: document.id,
         });
@@ -164,8 +163,6 @@ export class TrawApp {
   };
 
   addRecords = (records: Record[]) => {
-    records = migrateRecords(records);
-
     records.forEach((record) => {
       switch (record.type) {
         case 'create_page':
