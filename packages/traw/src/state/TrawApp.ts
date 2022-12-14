@@ -105,7 +105,9 @@ export class TrawApp {
         height: 0,
       },
       camera: {
-        [this.editorId]: {},
+        [this.editorId]: {
+          [this.app.appState.currentPageId]: DEFAULT_CAMERA,
+        },
       },
       user,
       document,
@@ -150,6 +152,11 @@ export class TrawApp {
 
     const tdCamera = convertCameraTRtoTD(trCamera, viewport);
     this.app.setCamera(tdCamera.point, tdCamera.zoom, 'sync_camera');
+  };
+
+  getCamera = (slideId: string) => {
+    const { camera } = this.store.getState();
+    return camera[this.editorId][slideId];
   };
 
   handleCameraChange = (camera: TDCamera) => {
