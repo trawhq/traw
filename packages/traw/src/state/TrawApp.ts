@@ -4,6 +4,7 @@ import { migrateRecords } from 'components/utils/migrate';
 import { Record, TrawSnapshot, TDCamera, TRCamera, TRViewport } from 'types';
 import { DEFAULT_CAMERA, SLIDE_HEIGHT, SLIDE_RATIO, SLIDE_WIDTH } from '../constants';
 import { nanoid } from 'nanoid';
+import debounce from 'lodash/debounce';
 
 export interface TRCallbacks {
   /**
@@ -171,7 +172,36 @@ export class TrawApp {
         },
       };
     });
+
+    if (this._actionStartTime === 0) {
+      this._actionStartTime = Date.now();
+    }
+    this.handleCameraRecord(trawCamera);
   };
+
+  handleCameraRecord = debounce((camera: TRCamera) => {
+    const currentPageId = this.app.appState.currentPageId;
+    // create record
+    const record: Record = {
+      id: nanoid(),
+      type: 'zoom',
+      slideId: currentPageId,
+      start: this._actionStartTime || Date.now(),
+      end: Date.now(),
+      user: this.editorId,
+      data: {
+        camera,
+      },
+      origin: '',
+    };
+    this.callbacks.onRecordsCreate?.(this.app, [record]);
+    this.store.setState((state) => {
+      return {
+        ...state,
+        records: [...state.records, record],
+      };
+    });
+  }, 400);
 
   selectTool(tool: TDToolType) {
     this.app.selectTool(tool);
@@ -193,7 +223,6 @@ export class TrawApp {
 
   private recordCommand = (state: TDSnapshot, command: TldrawCommand) => {
     const records: Record[] = [];
-    console.log(command);
     switch (command.id) {
       case 'change_page':
         if (command.after.appState)
@@ -314,6 +343,20 @@ export class TrawApp {
             },
           });
           break;
+        case 'zoom':
+          if (!record.slideId) break;
+          this.store.setState((state) => {
+            return {
+              ...state,
+              camera: {
+                ...state.camera,
+                [record.user]: {
+                  ...state.camera[record.user],
+                  [record.slideId || '']: record.data.camera,
+                },
+              },
+            };
+          });
         default: {
           const { data, slideId } = record;
           if (!slideId) break;

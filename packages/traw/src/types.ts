@@ -15,7 +15,8 @@ export type ActionType =
   | 'edit'
   | 'delete'
   | 'create_draw'
-  | 'create';
+  | 'create'
+  | 'zoom';
 
 export type TrawToolInfo = {
   type: TDToolType | 'file';
