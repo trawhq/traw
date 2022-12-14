@@ -36,5 +36,18 @@ export type Record = {
 };
 
 export type TrawSnapshot = {
+  document: TrawDocument;
+  user: TrawUser;
   records: Record[];
+};
+
+export type TrawUser = {
+  id: string;
+  name: string;
+  profileUrl?: string;
+};
+
+export type TrawDocument = {
+  id: string;
+  name: string;
 };

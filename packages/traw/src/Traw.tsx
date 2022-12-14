@@ -1,23 +1,23 @@
 import React from 'react';
-import { Header } from './components/Header';
-import { Panel } from './components/Panel';
-import { Slide } from './components/Slide';
-import { TrawContext } from './hooks/useTrawApp';
+import { Header, Panel, Slide } from './components';
+import { TrawContext } from 'hooks';
 import './index.css';
-import { TrawApp } from './state/TrawApp';
-import { Record } from './types';
+import { TrawApp } from 'state';
+import { TEST_DOCUMENT_1, TEST_USER_1 } from 'utils/testUtil';
 
 export interface TrawProps {
   app?: TrawApp;
-  id?: string;
-  records?: Record[];
-  onAddRecord?: (record: Record) => void;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const Traw = ({ app, id, records = [], onAddRecord }: TrawProps) => {
+const Traw = ({ app }: TrawProps) => {
   // Create a new app when the component mounts.
-  const [trawApp] = React.useState(app ?? new TrawApp());
+  const [trawApp] = React.useState(
+    app ??
+      new TrawApp({
+        user: TEST_USER_1,
+        document: TEST_DOCUMENT_1,
+      }),
+  );
 
   React.useLayoutEffect(() => {
     if (typeof window === 'undefined') return;

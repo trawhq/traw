@@ -1,26 +1,17 @@
-import { TDSnapshot, TDToolType, TldrawCommand } from '@tldraw/tldraw';
+import { TDSnapshot, TDToolType, TldrawApp, TldrawCommand } from '@tldraw/tldraw';
 import createVanilla, { StoreApi } from 'zustand/vanilla';
 import { migrateRecords } from 'components/utils/migrate';
-import { Record, TrawSnapshot } from 'types';
-import { TrawCanvasApp } from 'state/TrawCanvasApp';
-
-export interface TRCallbacks {
-  /**
-   * Called when a new record is created.
-   * @param app The Traw app.
-   * @param record The record that was created.
-   */
-  onRecordsCreate?: (app: TrawCanvasApp, records: Record[]) => void;
-}
+import { ActionType, Record, TrawSnapshot } from 'types';
+import { CreateRecordsEvent, EventTypeHandlerMap, TrawEventHandler, TrawEventType } from 'state/events';
+import { nanoid } from 'nanoid';
+import { TrawAppOptions } from 'state/TrawAppOptions';
 
 export class TrawApp {
   /**
    * The Tldraw app. (https://tldraw.com)
    * This is used to create and edit slides.
    */
-  app: TrawCanvasApp;
-
-  callbacks: TRCallbacks;
+  app: TldrawApp;
 
   /**
    * A zustand store that also holds the state.
@@ -33,24 +24,41 @@ export class TrawApp {
   private _state: TrawSnapshot;
 
   /**
+   * Event handlers
+   * @private
+   */
+  private eventHandlersMap = new Map<TrawEventType, TrawEventHandler[]>();
+
+  /**
    * The time the current action started.
    * This is used to calculate the duration of the record.
    */
   private _actionStartTime: number | undefined;
 
-  constructor(callbacks = {} as TRCallbacks) {
-    this.app = new TrawCanvasApp('', {
-      onSessionStart: this.setActionStartTime,
-    });
-
-    this.app.onCommand = this.recordCommand;
+  constructor({ user, document, records = [] }: TrawAppOptions) {
+    // dummy app
+    this.app = new TldrawApp();
 
     this._state = {
-      records: [],
+      user,
+      document,
+      records,
     };
     this.store = createVanilla(() => this._state);
+  }
 
-    this.callbacks = callbacks;
+  registerApp(app: TldrawApp) {
+    app.callbacks = {
+      onCommand: this.recordCommand,
+      // onSessionEnd: () => {
+      //   console.log('Session ended');
+      // },
+      // onPatch: () => {
+      //   console.log('onPatch');
+      // },
+    };
+
+    this.app = app;
   }
 
   selectTool(tool: TDToolType) {
@@ -69,7 +77,11 @@ export class TrawApp {
     this._actionStartTime = Date.now();
   };
 
-  recordCommand = (state: TDSnapshot, command: TldrawCommand) => {
+  // private handleZoom = (state: TDSnapshot) => {};
+
+  private recordCommand = (state: TDSnapshot, command: TldrawCommand) => {
+    const user = this.store.getState().user;
+    const document = this.store.getState().document;
     const records: Record[] = [];
     console.log(command);
     switch (command.id) {
@@ -77,32 +89,41 @@ export class TrawApp {
         if (command.after.appState)
           records.push({
             type: command.id,
+            id: nanoid(),
+            user: user.id,
             data: {
               id: command.after.appState.currentPageId,
             },
             start: this._actionStartTime ? this._actionStartTime : 0,
             end: Date.now(),
-          } as Record);
+            origin: document.id,
+          });
         break;
       case 'create_page': {
         if (!command.after.document || !command.after.document.pages) break;
         const pageId = Object.keys(command.after.document.pages)[0];
         records.push({
           type: command.id,
+          id: nanoid(),
+          user: user.id,
           data: {
             id: pageId,
           },
           start: Date.now() - 1, // Create page must be before select page
           end: Date.now() - 1,
-        } as Record);
+          origin: document.id,
+        });
         records.push({
           type: 'change_page',
+          id: nanoid(),
+          user: user.id,
           data: {
             id: pageId,
           },
           start: Date.now(),
           end: Date.now(),
-        } as Record);
+          origin: document.id,
+        });
         break;
       }
       case 'delete_page':
@@ -112,19 +133,27 @@ export class TrawApp {
         const pageId = Object.keys(command.after.document.pages)[0];
 
         records.push({
-          type: command.id,
+          type: command.id as ActionType,
+          id: nanoid(),
+          user: user.id,
           data: command.after.document.pages[pageId],
           slideId: pageId,
           start: this._actionStartTime ? this._actionStartTime : 0,
           end: Date.now(),
-        } as Record);
+          origin: document.id,
+        });
         break;
       }
     }
 
     if (!records.length) return;
 
-    this.callbacks.onRecordsCreate?.(this.app, records);
+    const createRecordsEvent: CreateRecordsEvent = {
+      tldrawApp: this.app,
+      records,
+    };
+    this.emit(TrawEventType.CreateRecords, createRecordsEvent);
+
     this.store.setState((state) => {
       return {
         ...state,
@@ -214,4 +243,26 @@ export class TrawApp {
   selectSlide = (id: string) => {
     this.app.changePage(id);
   };
+
+  /*
+   * Event handlers
+   */
+  on<K extends keyof EventTypeHandlerMap>(eventType: K, handler: EventTypeHandlerMap[K]) {
+    const handlers = this.eventHandlersMap.get(eventType) || [];
+    handlers.push(handler);
+    this.eventHandlersMap.set(eventType, handlers);
+  }
+
+  off<K extends keyof EventTypeHandlerMap>(eventType: K, handler: EventTypeHandlerMap[K]) {
+    const handlers = this.eventHandlersMap.get(eventType) || [];
+    this.eventHandlersMap.set(
+      eventType,
+      handlers.filter((h: TrawEventHandler) => h !== handler),
+    );
+  }
+
+  emit<K extends keyof EventTypeHandlerMap>(eventType: K, event: Parameters<EventTypeHandlerMap[K]>[0]) {
+    const handlers = this.eventHandlersMap.get(eventType) || [];
+    handlers.forEach((h: TrawEventHandler) => h(event));
+  }
 }

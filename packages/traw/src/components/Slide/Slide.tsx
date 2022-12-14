@@ -1,9 +1,8 @@
-import React, { useState } from 'react';
 import { useTrawApp } from 'hooks';
-import ToolBox from '../ToolBox';
+import React, { useState } from 'react';
 import SlideGridView from './SlideGridView';
 
-import { SlideItem } from './SlideItem';
+import { Editor } from '../Editor';
 import SlideList from './SlideList';
 
 export const Slide = () => {
@@ -11,7 +10,7 @@ export const Slide = () => {
 
   const app = useTrawApp();
   const { appState, document } = app.useSlidesStore();
-  const { activeTool, currentPageId } = appState;
+  const { currentPageId } = appState;
 
   const pages = document.pages;
 
@@ -44,24 +43,7 @@ export const Slide = () => {
         <SlideList canAddSlide={true} handleAddSlide={handleAddSlide} handleGridView={handleToggleGridView} />
       </div>
       <div className="flex flex-1 w-full">
-        <div className="flex w-full flex-col items-center">
-          <div className="flex flex-1 w-full items-center ">
-            <div className="flex-1">
-              <SlideItem />
-            </div>
-          </div>
-
-          <div className="flex basis-[56px] ">
-            <ToolBox
-              currentTool={activeTool}
-              isUndoable={true}
-              isRedoable={true}
-              selectTool={console.log}
-              handleUndo={console.log}
-              handleRedo={console.log}
-            />
-          </div>
-        </div>
+        <Editor />
       </div>
     </div>
   );
