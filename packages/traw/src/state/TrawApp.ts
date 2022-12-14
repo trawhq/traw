@@ -1,7 +1,8 @@
 import { TDSnapshot, TDToolType, TldrawApp, TldrawCommand } from '@tldraw/tldraw';
 import createVanilla, { StoreApi } from 'zustand/vanilla';
 import { migrateRecords } from 'components/utils/migrate';
-import { Record, TrawSnapshot } from 'types';
+import { Record, TrawSnapshot, TDCamera, TRCamera, TRViewport } from 'types';
+import { SLIDE_HEIGHT, SLIDE_RATIO, SLIDE_WIDTH } from '../constants';
 
 export interface TRCallbacks {
   /**
@@ -12,6 +13,27 @@ export interface TRCallbacks {
   onRecordsCreate?: (app: TldrawApp, records: Record[]) => void;
 }
 
+export const convertCameraTRtoTD = (camera: TRCamera, viewport: TRViewport): TDCamera => {
+  const ratio = viewport.width / viewport.height;
+  if (ratio > SLIDE_RATIO) {
+    // wider than slide
+    const absoluteHeight = SLIDE_HEIGHT / camera.zoom;
+    const zoom = viewport.width / absoluteHeight;
+    return {
+      point: [-camera.center.x + viewport.width / zoom / 2, -camera.center.y + viewport.height / zoom / 2],
+      zoom,
+    };
+  } else {
+    // taller than slide
+    const absoluteWidth = SLIDE_WIDTH / camera.zoom;
+    const zoom = viewport.width / absoluteWidth;
+    return {
+      point: [-camera.center.x + viewport.width / zoom / 2, -camera.center.y + viewport.height / zoom / 2],
+      zoom: zoom,
+    };
+  }
+};
+
 export class TrawApp {
   /**
    * The Tldraw app. (https://tldraw.com)
@@ -20,6 +42,13 @@ export class TrawApp {
   app: TldrawApp;
 
   callbacks: TRCallbacks;
+
+  editorId: string;
+
+  viewportSize = {
+    width: 0,
+    height: 0,
+  };
 
   /**
    * A zustand store that also holds the state.
@@ -37,12 +66,21 @@ export class TrawApp {
    */
   private _actionStartTime: number | undefined;
 
-  constructor(callbacks = {} as TRCallbacks) {
+  constructor(editorId: string, callbacks = {} as TRCallbacks) {
     // dummy app
     this.app = new TldrawApp();
 
+    this.editorId = editorId || 'editor';
+
     this._state = {
       records: [],
+      viewport: {
+        width: 0,
+        height: 0,
+      },
+      camera: {
+        [this.editorId]: {},
+      },
     };
     this.store = createVanilla(() => this._state);
 
@@ -52,16 +90,34 @@ export class TrawApp {
   registerApp(app: TldrawApp) {
     app.callbacks = {
       onCommand: this.recordCommand,
-      // onSessionEnd: () => {
-      //   console.log('Session ended');
-      // },
-      // onPatch: () => {
-      //   console.log('onPatch');
-      // },
+      onPatch: (app, patch) => {
+        const camera = patch.document?.pageStates?.page?.camera as TDCamera;
+        if (camera) {
+          this.handleViewportChange(camera);
+        }
+      },
     };
 
     this.app = app;
   }
+
+  updateViewportSize = (width: number, height: number) => {
+    this.store.setState((state) => {
+      return {
+        ...state,
+        viewport: {
+          width,
+          height,
+        },
+      };
+    });
+    const camera = convertCameraTRtoTD({ center: { x: 0, y: 0 }, zoom: 1 }, { width, height });
+    this.app.setCamera(camera.point, camera.zoom, 'viewport_change');
+  };
+
+  handleViewportChange = (camera: TDCamera) => {
+    console.log(camera);
+  };
 
   selectTool(tool: TDToolType) {
     this.app.selectTool(tool);
