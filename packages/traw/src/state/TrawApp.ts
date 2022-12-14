@@ -40,22 +40,22 @@ export const convertCameraTDtoTR = (camera: TDCamera, viewport: TRViewport): TRC
   if (ratio > SLIDE_RATIO) {
     // wider than slide
     const absoluteHeight = viewport.height / camera.zoom;
-    const zoom = viewport.height / absoluteHeight;
+    const zoom = SLIDE_HEIGHT / absoluteHeight;
     return {
       center: {
-        x: -camera.point[0] + viewport.width / zoom / 2,
-        y: -camera.point[1] + viewport.height / zoom / 2,
+        x: -camera.point[0] + viewport.width / camera.zoom / 2,
+        y: -camera.point[1] + viewport.height / camera.zoom / 2,
       },
       zoom,
     };
   } else {
     // taller than slide
     const absoluteWidth = viewport.width / camera.zoom;
-    const zoom = viewport.width / absoluteWidth;
+    const zoom = SLIDE_WIDTH / absoluteWidth;
     return {
       center: {
-        x: -camera.point[0] + viewport.width / zoom / 2,
-        y: -camera.point[1] + viewport.height / zoom / 2,
+        x: -camera.point[0] + viewport.width / camera.zoom / 2,
+        y: -camera.point[1] + viewport.height / camera.zoom / 2,
       },
       zoom: zoom,
     };
