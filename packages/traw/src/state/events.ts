@@ -17,9 +17,7 @@ export interface CreateRecordsEvent extends TrawBaseEvent {
 export type CreateRecordsHandler = (event: CreateRecordsEvent) => void;
 
 /**
- * Event for newly created records
- *
- * Records added by TrawApp.addRecords will not trigger this event
+ * Event triggered when TldrawApp is changed. 
  */
 export type TldrawAppChangeEvent = TrawBaseEvent;
 
