@@ -1,5 +1,6 @@
 import { Renderer } from '@tldraw/core';
 import { shapeUtils, TDPage } from '@tldraw/tldraw';
+import { useTldrawApp } from 'hooks/useTldrawApp';
 import React, { useMemo } from 'react';
 import { convertCameraTRtoTD } from 'state';
 import { useTrawApp } from '../../hooks/useTrawApp';
@@ -12,8 +13,9 @@ const SLideThumbnail = ({ page }: SlideThumbnailProps) => {
   const slideDomRef = React.useRef<HTMLDivElement>(null);
 
   const app = useTrawApp();
-  const state = app.useSlidesStore();
-  const camera = app.getCamera(page.id);
+  const tldrawApp = useTldrawApp();
+  const state = tldrawApp.useStore();
+  const camera = app.useStore((state) => state.camera[state.user.id][page.id]);
   const tlCamera = useMemo(() => {
     return convertCameraTRtoTD(camera, { width: 133, height: 75 });
   }, [camera]);

@@ -73,6 +73,7 @@
     "@radix-ui/react-tooltip": "^1.0.2",
     "@tldraw/tldraw": "^1.26.3",
     "classnames": "^2.3.2",
+    "immer": "^9.0.16",
     "lodash": "^4.17.21",
     "nanoid": "^3.3.4",
     "uuid": "^9.0.0",

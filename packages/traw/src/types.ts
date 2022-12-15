@@ -25,7 +25,7 @@ export type TrawToolInfo = {
   shortcut: (string | number)[];
 };
 
-export type Record = {
+export type TRRecord = {
   type: ActionType;
   data: any;
   id: string;
@@ -53,7 +53,7 @@ export type TRCamera = {
 
 export type TrawSnapshot = {
   viewport: TRViewport;
-  records: Record[];
+  records: Record<string, TRRecord>;
   camera: {
     [userId: string]: {
       [slideId: string]: TRCamera;
