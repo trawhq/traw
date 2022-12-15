@@ -17,7 +17,7 @@ export interface CreateRecordsEvent extends TrawBaseEvent {
 export type CreateRecordsHandler = (event: CreateRecordsEvent) => void;
 
 /**
- * Event triggered when TldrawApp is changed. 
+ * Event triggered when TldrawApp is changed.
  */
 export type TldrawAppChangeEvent = TrawBaseEvent;
 
