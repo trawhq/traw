@@ -1,6 +1,6 @@
 {
   "name": "@traw/traw",
-  "version": "0.1.3-alpha3",
+  "version": "0.1.3-alpha4",
   "main": "build/index.js",
   "types": "build/index.d.ts",
   "module": "build/index.esm.js",
