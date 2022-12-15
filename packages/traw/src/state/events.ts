@@ -23,12 +23,20 @@ export type TldrawAppChangeEvent = TrawBaseEvent;
 
 export type TldrawAppChangeHandler = (event: TldrawAppChangeEvent) => void;
 
+export interface PointerMoveEvent extends TrawBaseEvent {
+  x: number;
+  y: number;
+}
+
+export type PointerMoveHandler = (event: PointerMoveEvent) => void;
+
 /**
  * Traw Event Types
  */
 export enum TrawEventType {
   CreateRecords = 'createRecords',
   TldrawAppChange = 'tldrawAppChange',
+  PointerMove = 'pointerMove',
 }
 
 /**
@@ -37,9 +45,10 @@ export enum TrawEventType {
 export interface EventTypeHandlerMap {
   [TrawEventType.CreateRecords]: CreateRecordsHandler;
   [TrawEventType.TldrawAppChange]: TldrawAppChangeHandler;
+  [TrawEventType.PointerMove]: PointerMoveHandler;
 }
 
 /**
  * Union type of event handlers
  */
-export type TrawEventHandler = CreateRecordsHandler | TldrawAppChangeHandler;
+export type TrawEventHandler = CreateRecordsHandler | TldrawAppChangeHandler | PointerMoveHandler;
