@@ -1,13 +1,14 @@
 import { TDSnapshot, TDToolType, TldrawApp, TldrawCommand } from '@tldraw/tldraw';
 import debounce from 'lodash/debounce';
 import { nanoid } from 'nanoid';
-import { Record, TDCamera, TrawSnapshot, TRCamera, TRViewport } from 'types';
+import { TRRecord, TDCamera, TrawSnapshot, TRCamera, TRViewport } from 'types';
 import createVanilla, { StoreApi } from 'zustand/vanilla';
 import { DEFAULT_CAMERA, SLIDE_HEIGHT, SLIDE_RATIO, SLIDE_WIDTH } from '../constants';
 
 import { CreateRecordsEvent, EventTypeHandlerMap, TrawEventHandler, TrawEventType } from 'state/events';
 import { ActionType } from 'types';
 import { TrawAppOptions } from './TrawAppOptions';
+import produce from 'immer';
 
 export const convertCameraTRtoTD = (camera: TRCamera, viewport: TRViewport): TDCamera => {
   const ratio = viewport.width / viewport.height;
@@ -99,6 +100,11 @@ export class TrawApp {
 
     this.editorId = user.id;
 
+    const recordMap: Record<string, TRRecord> = {};
+    records.forEach((record) => {
+      recordMap[record.id] = record;
+    });
+
     this._state = {
       viewport: {
         width: 0,
@@ -111,7 +117,7 @@ export class TrawApp {
       },
       user,
       document,
-      records,
+      records: {},
     };
     this.store = createVanilla(() => this._state);
   }
@@ -163,18 +169,11 @@ export class TrawApp {
     const trawCamera = convertCameraTDtoTR(camera, this.store.getState().viewport);
     const currentPageId = this.app.appState.currentPageId;
 
-    this.store.setState((state) => {
-      return {
-        ...state,
-        camera: {
-          ...state.camera,
-          [this.editorId]: {
-            ...state.camera[this.editorId],
-            [currentPageId]: trawCamera,
-          },
-        },
-      };
-    });
+    this.store.setState(
+      produce((state) => {
+        state.camera[this.editorId][currentPageId] = trawCamera;
+      }),
+    );
 
     if (this._actionStartTime === 0) {
       this._actionStartTime = Date.now();
@@ -185,7 +184,7 @@ export class TrawApp {
   handleCameraRecord = debounce((camera: TRCamera) => {
     const currentPageId = this.app.appState.currentPageId;
     // create record
-    const record: Record = {
+    const record: TRRecord = {
       id: nanoid(),
       type: 'zoom',
       slideId: currentPageId,
@@ -203,12 +202,11 @@ export class TrawApp {
       records: [record],
     };
     this.emit(TrawEventType.CreateRecords, createRecordsEvent);
-    this.store.setState((state) => {
-      return {
-        ...state,
-        records: [...state.records, record],
-      };
-    });
+    this.store.setState(
+      produce((state) => {
+        state.records[record.id] = record;
+      }),
+    );
   }, 400);
 
   selectTool(tool: TDToolType) {
@@ -232,7 +230,7 @@ export class TrawApp {
   private recordCommand = (state: TDSnapshot, command: TldrawCommand) => {
     const user = this.store.getState().user;
     const document = this.store.getState().document;
-    const records: Record[] = [];
+    const records: TRRecord[] = [];
     switch (command.id) {
       case 'change_page':
         if (command.after.appState)
@@ -303,16 +301,29 @@ export class TrawApp {
     };
     this.emit(TrawEventType.CreateRecords, createRecordsEvent);
 
-    this.store.setState((state) => {
-      return {
-        ...state,
-        records: [...state.records, ...records],
-      };
-    });
+    this.store.setState(
+      produce((state) => {
+        records.forEach((record) => {
+          state.records[record.id] = record;
+        });
+      }),
+    );
     this._actionStartTime = 0;
   };
 
-  addRecords = (records: Record[]) => {
+  addRecords = (records: TRRecord[]) => {
+    records = records.sort((a, b) => a.start - b.start);
+    this.store.setState(
+      produce((state) => {
+        records.forEach((record) => {
+          state.records[record.id] = record;
+        });
+      }),
+    );
+    this.applyRecords(records);
+  };
+
+  applyRecords = (records: TRRecord[]) => {
     records.forEach((record) => {
       switch (record.type) {
         case 'create_page':
@@ -336,18 +347,12 @@ export class TrawApp {
               },
             },
           });
-          this.store.setState((state) => {
-            return {
-              ...state,
-              camera: {
-                ...state.camera,
-                [this.editorId]: {
-                  ...state.camera[this.editorId],
-                  [record.data.id]: DEFAULT_CAMERA,
-                },
-              },
-            };
-          });
+          this.store.setState(
+            produce((state) => {
+              state.camera[record.user][record.data.id] = DEFAULT_CAMERA;
+              state.camera[this.editorId][record.data.id] = DEFAULT_CAMERA;
+            }),
+          );
           break;
         case 'change_page':
           this.app.patchState({
@@ -370,18 +375,11 @@ export class TrawApp {
           break;
         case 'zoom':
           if (!record.slideId) break;
-          this.store.setState((state) => {
-            return {
-              ...state,
-              camera: {
-                ...state.camera,
-                [record.user]: {
-                  ...state.camera[record.user],
-                  [record.slideId || '']: record.data.camera,
-                },
-              },
-            };
-          });
+          this.store.setState(
+            produce((state) => {
+              state.camera[record.user][record.slideId || ''] = record.data.camera;
+            }),
+          );
           break;
         default: {
           const { data, slideId } = record;
@@ -410,18 +408,11 @@ export class TrawApp {
 
   createSlide = () => {
     const pageId = nanoid();
-    this.store.setState((state) => {
-      return {
-        ...state,
-        camera: {
-          ...state.camera,
-          [this.editorId]: {
-            ...state.camera[this.editorId],
-            [pageId]: DEFAULT_CAMERA,
-          },
-        },
-      };
-    });
+    this.store.setState(
+      produce((state) => {
+        state.camera[this.editorId][pageId] = DEFAULT_CAMERA;
+      }),
+    );
     this.app.createPage(pageId);
     this.syncCamera();
   };
