@@ -1,7 +1,7 @@
 import { Renderer } from '@tldraw/core';
 import { shapeUtils, TDPage } from '@tldraw/tldraw';
-import React from 'react';
-import { SLIDE_HEIGHT, SLIDE_WIDTH } from '../../constants';
+import React, { useMemo } from 'react';
+import { convertCameraTRtoTD } from 'state';
 import { useTrawApp } from '../../hooks/useTrawApp';
 
 interface SlideThumbnailProps {
@@ -13,6 +13,10 @@ const SLideThumbnail = ({ page }: SlideThumbnailProps) => {
 
   const app = useTrawApp();
   const state = app.useSlidesStore();
+  const camera = app.getCamera(page.id);
+  const tlCamera = useMemo(() => {
+    return convertCameraTRtoTD(camera, { width: 133, height: 75 });
+  }, [camera]);
 
   const { settings, document } = state;
 
@@ -30,10 +34,7 @@ const SLideThumbnail = ({ page }: SlideThumbnailProps) => {
         pageState={{
           id: page.id,
           selectedIds: [],
-          camera: {
-            point: [SLIDE_WIDTH / 2, SLIDE_HEIGHT / 2],
-            zoom: 133 / SLIDE_WIDTH,
-          },
+          camera: tlCamera,
         }}
         assets={document.assets}
       />

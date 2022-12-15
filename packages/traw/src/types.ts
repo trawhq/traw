@@ -1,4 +1,4 @@
-import { TDToolType } from '@tldraw/tldraw';
+import { TDSnapshot, TDToolType } from '@tldraw/tldraw';
 
 export type ActionType =
   | 'ADD'
@@ -15,7 +15,8 @@ export type ActionType =
   | 'edit'
   | 'delete'
   | 'create_draw'
-  | 'create';
+  | 'create'
+  | 'zoom';
 
 export type TrawToolInfo = {
   type: TDToolType | 'file';
@@ -35,10 +36,31 @@ export type Record = {
   origin: string;
 };
 
+export type TDCamera = TDSnapshot['document']['pageStates']['page']['camera'];
+
+export type TRViewport = {
+  width: number;
+  height: number;
+};
+
+export type TRCamera = {
+  center: {
+    x: number;
+    y: number;
+  };
+  zoom: number;
+};
+
 export type TrawSnapshot = {
+  viewport: TRViewport;
+  records: Record[];
+  camera: {
+    [userId: string]: {
+      [slideId: string]: TRCamera;
+    };
+  };
   document: TrawDocument;
   user: TrawUser;
-  records: Record[];
 };
 
 export type TrawUser = {

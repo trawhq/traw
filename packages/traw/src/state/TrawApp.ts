@@ -1,9 +1,60 @@
-import { TDSnapshot, TDToolType, TldrawApp, TldrawCommand } from '@tldraw/tldraw';
-import createVanilla, { StoreApi } from 'zustand/vanilla';
-import { ActionType, Record, TrawSnapshot } from 'types';
-import { CreateRecordsEvent, EventTypeHandlerMap, TrawEventHandler, TrawEventType } from 'state/events';
+import { TDAsset, TDToolType, TldrawApp, TldrawCommand } from '@tldraw/tldraw';
+import debounce from 'lodash/debounce';
 import { nanoid } from 'nanoid';
-import { TrawAppOptions } from 'state/TrawAppOptions';
+import { ActionType, Record, TDCamera, TrawSnapshot, TRCamera, TRViewport } from 'types';
+import createVanilla, { StoreApi } from 'zustand/vanilla';
+import { DEFAULT_CAMERA, SLIDE_HEIGHT, SLIDE_RATIO, SLIDE_WIDTH } from '../constants';
+
+import { CreateRecordsEvent, EventTypeHandlerMap, TrawEventHandler, TrawEventType } from 'state/events';
+import { TrawAppOptions } from './TrawAppOptions';
+
+export const convertCameraTRtoTD = (camera: TRCamera, viewport: TRViewport): TDCamera => {
+  const ratio = viewport.width / viewport.height;
+  if (ratio > SLIDE_RATIO) {
+    // wider than slide
+    const absoluteHeight = SLIDE_HEIGHT / camera.zoom;
+    const zoom = viewport.height / absoluteHeight;
+    return {
+      point: [-camera.center.x + viewport.width / zoom / 2, -camera.center.y + viewport.height / zoom / 2],
+      zoom,
+    };
+  } else {
+    // taller than slide
+    const absoluteWidth = SLIDE_WIDTH / camera.zoom;
+    const zoom = viewport.width / absoluteWidth;
+    return {
+      point: [-camera.center.x + viewport.width / zoom / 2, -camera.center.y + viewport.height / zoom / 2],
+      zoom: zoom,
+    };
+  }
+};
+
+export const convertCameraTDtoTR = (camera: TDCamera, viewport: TRViewport): TRCamera => {
+  const ratio = viewport.width / viewport.height;
+  if (ratio > SLIDE_RATIO) {
+    // wider than slide
+    const absoluteHeight = viewport.height / camera.zoom;
+    const zoom = SLIDE_HEIGHT / absoluteHeight;
+    return {
+      center: {
+        x: -camera.point[0] + viewport.width / camera.zoom / 2,
+        y: -camera.point[1] + viewport.height / camera.zoom / 2,
+      },
+      zoom,
+    };
+  } else {
+    // taller than slide
+    const absoluteWidth = viewport.width / camera.zoom;
+    const zoom = SLIDE_WIDTH / absoluteWidth;
+    return {
+      center: {
+        x: -camera.point[0] + viewport.width / camera.zoom / 2,
+        y: -camera.point[1] + viewport.height / camera.zoom / 2,
+      },
+      zoom: zoom,
+    };
+  }
+};
 
 export class TrawApp {
   /**
@@ -11,6 +62,13 @@ export class TrawApp {
    * This is used to create and edit slides.
    */
   app: TldrawApp;
+
+  editorId: string;
+
+  viewportSize = {
+    width: 0,
+    height: 0,
+  };
 
   /**
    * A zustand store that also holds the state.
@@ -34,11 +92,29 @@ export class TrawApp {
    */
   private _actionStartTime: number | undefined;
 
+  /**
+   * Handle asset creation. Preprocess the file and upload it to the remote. Should return the asset URL.
+   *
+   * @returns - The asset URL
+   */
+  public onAssetCreate?: (app: TldrawApp, file: File, id: string) => Promise<string | false>;
+
   constructor({ user, document, records = [] }: TrawAppOptions) {
     // dummy app
     this.app = new TldrawApp();
 
+    this.editorId = user.id;
+
     this._state = {
+      viewport: {
+        width: 0,
+        height: 0,
+      },
+      camera: {
+        [this.editorId]: {
+          [this.app.appState.currentPageId]: DEFAULT_CAMERA,
+        },
+      },
       user,
       document,
       records,
@@ -60,6 +136,86 @@ export class TrawApp {
     this.app = app;
   }
 
+  updateViewportSize = (width: number, height: number) => {
+    this.store.setState((state) => {
+      return {
+        ...state,
+        viewport: {
+          width,
+          height,
+        },
+      };
+    });
+    this.syncCamera();
+  };
+
+  syncCamera = () => {
+    const currentPageId = this.app.appState.currentPageId;
+    const { viewport, camera } = this.store.getState();
+    const trCamera = camera[this.editorId][currentPageId];
+    if (!trCamera) return;
+
+    const tdCamera = convertCameraTRtoTD(trCamera, viewport);
+    this.app.setCamera(tdCamera.point, tdCamera.zoom, 'sync_camera');
+  };
+
+  getCamera = (slideId: string) => {
+    const { camera } = this.store.getState();
+    return camera[this.editorId][slideId];
+  };
+
+  handleCameraChange = (camera: TDCamera) => {
+    const trawCamera = convertCameraTDtoTR(camera, this.store.getState().viewport);
+    const currentPageId = this.app.appState.currentPageId;
+
+    this.store.setState((state) => {
+      return {
+        ...state,
+        camera: {
+          ...state.camera,
+          [this.editorId]: {
+            ...state.camera[this.editorId],
+            [currentPageId]: trawCamera,
+          },
+        },
+      };
+    });
+
+    if (this._actionStartTime === 0) {
+      this._actionStartTime = Date.now();
+    }
+    this.handleCameraRecord(trawCamera);
+  };
+
+  handleCameraRecord = debounce((camera: TRCamera) => {
+    const currentPageId = this.app.appState.currentPageId;
+    // create record
+    const record: Record = {
+      id: nanoid(),
+      type: 'zoom',
+      slideId: currentPageId,
+      start: this._actionStartTime || Date.now(),
+      end: Date.now(),
+      user: this.editorId,
+      data: {
+        camera,
+      },
+      origin: '',
+    };
+
+    const createRecordsEvent: CreateRecordsEvent = {
+      tldrawApp: this.app,
+      records: [record],
+    };
+    this.emit(TrawEventType.CreateRecords, createRecordsEvent);
+    this.store.setState((state) => {
+      return {
+        ...state,
+        records: [...state.records, record],
+      };
+    });
+  }, 400);
+
   selectTool(tool: TDToolType) {
     this.app.selectTool(tool);
   }
@@ -78,11 +234,10 @@ export class TrawApp {
 
   // private handleZoom = (state: TDSnapshot) => {};
 
-  private recordCommand = (state: TDSnapshot, command: TldrawCommand) => {
+  private recordCommand = (app: TldrawApp, command: TldrawCommand) => {
     const user = this.store.getState().user;
     const document = this.store.getState().document;
     const records: Record[] = [];
-    console.log(command);
     switch (command.id) {
       case 'change_page':
         if (command.after.appState)
@@ -131,11 +286,28 @@ export class TrawApp {
         if (!command.after.document || !command.after.document.pages) break;
         const pageId = Object.keys(command.after.document.pages)[0];
 
+        const shapes = command.after.document.pages[pageId]?.shapes;
+        if (!shapes) break;
+
+        const assetIds = Object.values(shapes)
+          .map((shape) => shape?.assetId)
+          .filter((assetId: string | undefined): assetId is string => !!assetId);
+
+        const assets = app.assets
+          .filter((asset) => assetIds.includes(asset.id))
+          .reduce<{ [key: string]: TDAsset }>((acc, asset) => {
+            acc[asset.id] = asset;
+            return acc;
+          }, {});
+
         records.push({
           type: command.id as ActionType,
           id: nanoid(),
           user: user.id,
-          data: command.after.document.pages[pageId],
+          data: {
+            shapes,
+            assets,
+          },
           slideId: pageId,
           start: this._actionStartTime || new Date().getTime(),
           end: Date.now(),
@@ -186,6 +358,18 @@ export class TrawApp {
               },
             },
           });
+          this.store.setState((state) => {
+            return {
+              ...state,
+              camera: {
+                ...state.camera,
+                [this.editorId]: {
+                  ...state.camera[this.editorId],
+                  [record.data.id]: DEFAULT_CAMERA,
+                },
+              },
+            };
+          });
           break;
         case 'change_page':
           this.app.patchState({
@@ -204,6 +388,21 @@ export class TrawApp {
                 [record.data.id]: undefined,
               },
             },
+          });
+          break;
+        case 'zoom':
+          if (!record.slideId) break;
+          this.store.setState((state) => {
+            return {
+              ...state,
+              camera: {
+                ...state.camera,
+                [record.user]: {
+                  ...state.camera[record.user],
+                  [record.slideId || '']: record.data.camera,
+                },
+              },
+            };
           });
           break;
         default: {
@@ -229,8 +428,24 @@ export class TrawApp {
     });
   };
 
+  // setCamera = (camera: TDCamera, slideId: string) => {};
+
   createSlide = () => {
-    this.app.createPage();
+    const pageId = nanoid();
+    this.store.setState((state) => {
+      return {
+        ...state,
+        camera: {
+          ...state.camera,
+          [this.editorId]: {
+            ...state.camera[this.editorId],
+            [pageId]: DEFAULT_CAMERA,
+          },
+        },
+      };
+    });
+    this.app.createPage(pageId);
+    this.syncCamera();
   };
 
   deleteSlide = () => {
@@ -239,6 +454,14 @@ export class TrawApp {
 
   selectSlide = (id: string) => {
     this.app.changePage(id);
+    this.syncCamera();
+  };
+
+  private handleAssetCreate = async (app: TldrawApp, file: File, id: string): Promise<string | false> => {
+    if (this.onAssetCreate) {
+      return await this.onAssetCreate(app, file, id);
+    }
+    return false;
   };
 
   /*
@@ -258,7 +481,7 @@ export class TrawApp {
     );
   }
 
-  emit<K extends keyof EventTypeHandlerMap>(eventType: K, event: Parameters<EventTypeHandlerMap[K]>[0]) {
+  private emit<K extends keyof EventTypeHandlerMap>(eventType: K, event: Parameters<EventTypeHandlerMap[K]>[0]) {
     const handlers = this.eventHandlersMap.get(eventType) || [];
     handlers.forEach((h: TrawEventHandler) => h(event));
   }
