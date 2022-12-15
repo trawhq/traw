@@ -1,4 +1,4 @@
-import { Record } from 'types';
+import { TRRecord } from 'types';
 import { TldrawApp } from '@tldraw/tldraw';
 
 export interface TrawBaseEvent {
@@ -11,16 +11,26 @@ export interface TrawBaseEvent {
  * Records added by TrawApp.addRecords will not trigger this event
  */
 export interface CreateRecordsEvent extends TrawBaseEvent {
-  records: Record[];
+  records: TRRecord[];
 }
 
 export type CreateRecordsHandler = (event: CreateRecordsEvent) => void;
+
+/**
+ * Event for newly created records
+ *
+ * Records added by TrawApp.addRecords will not trigger this event
+ */
+export type TldrawAppChangeEvent = TrawBaseEvent;
+
+export type TldrawAppChangeHandler = (event: TldrawAppChangeEvent) => void;
 
 /**
  * Traw Event Types
  */
 export enum TrawEventType {
   CreateRecords = 'createRecords',
+  TldrawAppChange = 'tldrawAppChange',
 }
 
 /**
@@ -28,9 +38,10 @@ export enum TrawEventType {
  */
 export interface EventTypeHandlerMap {
   [TrawEventType.CreateRecords]: CreateRecordsHandler;
+  [TrawEventType.TldrawAppChange]: TldrawAppChangeHandler;
 }
 
 /**
  * Union type of event handlers
  */
-export type TrawEventHandler = CreateRecordsHandler;
+export type TrawEventHandler = CreateRecordsHandler | TldrawAppChangeHandler;

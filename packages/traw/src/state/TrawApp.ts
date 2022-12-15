@@ -1,14 +1,15 @@
 import { TDSnapshot, TDToolType, TldrawApp, TldrawCommand } from '@tldraw/tldraw';
 import debounce from 'lodash/debounce';
 import { nanoid } from 'nanoid';
-import { TRRecord, TDCamera, TrawSnapshot, TRCamera, TRViewport } from 'types';
+import { TDCamera, TrawSnapshot, TRCamera, TRRecord, TRViewport } from 'types';
 import createVanilla, { StoreApi } from 'zustand/vanilla';
 import { DEFAULT_CAMERA, SLIDE_HEIGHT, SLIDE_RATIO, SLIDE_WIDTH } from '../constants';
 
+import produce from 'immer';
 import { CreateRecordsEvent, EventTypeHandlerMap, TrawEventHandler, TrawEventType } from 'state/events';
 import { ActionType } from 'types';
+import create, { UseBoundStore } from 'zustand';
 import { TrawAppOptions } from './TrawAppOptions';
-import produce from 'immer';
 
 export const convertCameraTRtoTD = (camera: TRCamera, viewport: TRViewport): TDCamera => {
   const ratio = viewport.width / viewport.height;
@@ -94,6 +95,11 @@ export class TrawApp {
    */
   private _actionStartTime: number | undefined;
 
+  /**
+   * A React hook for accessing the zustand store.
+   */
+  public readonly useStore: UseBoundStore<StoreApi<TrawSnapshot>>;
+
   constructor({ user, document, records = [] }: TrawAppOptions) {
     // dummy app
     this.app = new TldrawApp();
@@ -120,6 +126,8 @@ export class TrawApp {
       records: {},
     };
     this.store = createVanilla(() => this._state);
+
+    this.useStore = create(this.store);
   }
 
   registerApp(app: TldrawApp) {
@@ -127,14 +135,20 @@ export class TrawApp {
       onCommand: this.recordCommand,
       onPatch: (app, patch, reason) => {
         if (reason === 'sync_camera') return;
-        const camera = patch.document?.pageStates?.page?.camera as TDCamera;
-        if (camera) {
-          this.handleCameraChange(camera);
+        const pageStates = patch.document?.pageStates;
+        const currentPageId = app.appState.currentPageId;
+        if (pageStates && pageStates[currentPageId]) {
+          const camera = pageStates[currentPageId]?.camera as TDCamera;
+          if (camera) {
+            this.handleCameraChange(camera);
+          }
         }
       },
     };
 
     this.app = app;
+    this.applyRecordsFromFirst();
+    this.emit(TrawEventType.TldrawAppChange, { tldrawApp: app });
   }
 
   updateViewportSize = (width: number, height: number) => {
@@ -313,13 +327,19 @@ export class TrawApp {
 
   addRecords = (records: TRRecord[]) => {
     records = records.sort((a, b) => a.start - b.start);
+    const newRecords = records.filter((record) => !this.store.getState().records[record.id]);
     this.store.setState(
       produce((state) => {
-        records.forEach((record) => {
+        newRecords.forEach((record) => {
           state.records[record.id] = record;
         });
       }),
     );
+    this.applyRecords(newRecords);
+  };
+
+  applyRecordsFromFirst = () => {
+    const records = Object.values(this.store.getState().records).sort((a, b) => a.start - b.start);
     this.applyRecords(records);
   };
 
@@ -429,7 +449,7 @@ export class TrawApp {
   /*
    * Event handlers
    */
-  on<K extends keyof EventTypeHandlerMap>(eventType: K, handler: EventTypeHandlerMap[K]) {
+  on<K extends TrawEventType>(eventType: K, handler: EventTypeHandlerMap[K]) {
     const handlers = this.eventHandlersMap.get(eventType) || [];
     handlers.push(handler);
     this.eventHandlersMap.set(eventType, handlers);
@@ -445,6 +465,6 @@ export class TrawApp {
 
   emit<K extends keyof EventTypeHandlerMap>(eventType: K, event: Parameters<EventTypeHandlerMap[K]>[0]) {
     const handlers = this.eventHandlersMap.get(eventType) || [];
-    handlers.forEach((h: TrawEventHandler) => h(event));
+    handlers.forEach((h: TrawEventHandler) => h(event as any));
   }
 }

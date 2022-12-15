@@ -1,3 +1,4 @@
+import { useTldrawApp } from 'hooks/useTldrawApp';
 import React, { useEffect, useRef } from 'react';
 import { useTrawApp } from '../../hooks/useTrawApp';
 import SvgAdd from '../../icons/add';
@@ -12,7 +13,8 @@ export interface SlideListProps {
 const SlideList = ({ canAddSlide, handleAddSlide, handleGridView }: SlideListProps) => {
   const slideRef = useRef<Record<string, HTMLElement>>({});
   const app = useTrawApp();
-  const state = app.useSlidesStore();
+  const tldrawApp = useTldrawApp();
+  const state = tldrawApp.useStore();
   const { document, appState } = state;
   const { currentPageId } = appState;
   const pages = document.pages;
