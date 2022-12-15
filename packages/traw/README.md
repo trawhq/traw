@@ -1,5 +1,5 @@
 <p align="center">
-<img src="../../docs/img/logo.png" alt="traw-logo" style="width:240px;" />
+<img src="https://resource-prod.traw.io/assets/brand/traw_brand_mark.png" alt="traw-logo" style="width:240px;" />
 </p>
 
 # Traw
