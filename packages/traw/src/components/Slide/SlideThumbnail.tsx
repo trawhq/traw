@@ -16,7 +16,6 @@ const SLideThumbnail = ({ page }: SlideThumbnailProps) => {
   const tldrawApp = useTldrawApp();
   const state = tldrawApp.useStore();
   const camera = app.useStore((state) => state.camera[state.user.id][page.id]);
-  console.log('camera', camera);
   const tlCamera = useMemo(() => {
     return convertCameraTRtoTD(camera, { width: 133, height: 75 });
   }, [camera]);
