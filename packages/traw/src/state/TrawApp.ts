@@ -139,6 +139,7 @@ export class TrawApp {
   registerApp(app: TldrawApp) {
     app.callbacks = {
       onCommand: this.recordCommand,
+      onAssetCreate: this.handleAssetCreate,
       onPatch: (app, patch, reason) => {
         if (reason === 'sync_camera') return;
         const pageStates = patch.document?.pageStates;
