@@ -1,13 +1,12 @@
-import { TDSnapshot, TDToolType, TldrawApp, TldrawCommand } from '@tldraw/tldraw';
+import { TDAsset, TDToolType, TldrawApp, TldrawCommand } from '@tldraw/tldraw';
 import debounce from 'lodash/debounce';
 import { nanoid } from 'nanoid';
-import { TDCamera, TrawSnapshot, TRCamera, TRRecord, TRViewport } from 'types';
+import { ActionType, TDCamera, TrawSnapshot, TRCamera, TRRecord, TRViewport } from 'types';
 import createVanilla, { StoreApi } from 'zustand/vanilla';
 import { DEFAULT_CAMERA, SLIDE_HEIGHT, SLIDE_RATIO, SLIDE_WIDTH } from '../constants';
 
 import produce from 'immer';
 import { CreateRecordsEvent, EventTypeHandlerMap, TrawEventHandler, TrawEventType } from 'state/events';
-import { ActionType } from 'types';
 import create, { UseBoundStore } from 'zustand';
 import { TrawAppOptions } from './TrawAppOptions';
 
@@ -100,6 +99,13 @@ export class TrawApp {
    */
   public readonly useStore: UseBoundStore<StoreApi<TrawSnapshot>>;
 
+  /**
+   * Handle asset creation. Preprocess the file and upload it to the remote. Should return the asset URL.
+   *
+   * @returns - The asset URL
+   */
+  public onAssetCreate?: (app: TldrawApp, file: File, id: string) => Promise<string | false>;
+
   constructor({ user, document, records = [] }: TrawAppOptions) {
     // dummy app
     this.app = new TldrawApp();
@@ -144,6 +150,12 @@ export class TrawApp {
           }
         }
       },
+      // onSessionEnd: () => {
+      //   console.log('Session ended');
+      // },
+      // onPatch: () => {
+      //   console.log('onPatch');
+      // },
     };
 
     this.app = app;
@@ -241,7 +253,7 @@ export class TrawApp {
 
   // private handleZoom = (state: TDSnapshot) => {};
 
-  private recordCommand = (state: TDSnapshot, command: TldrawCommand) => {
+  private recordCommand = (app: TldrawApp, command: TldrawCommand) => {
     const user = this.store.getState().user;
     const document = this.store.getState().document;
     const records: TRRecord[] = [];
@@ -293,11 +305,28 @@ export class TrawApp {
         if (!command.after.document || !command.after.document.pages) break;
         const pageId = Object.keys(command.after.document.pages)[0];
 
+        const shapes = command.after.document.pages[pageId]?.shapes;
+        if (!shapes) break;
+
+        const assetIds = Object.values(shapes)
+          .map((shape) => shape?.assetId)
+          .filter((assetId: string | undefined): assetId is string => !!assetId);
+
+        const assets = app.assets
+          .filter((asset) => assetIds.includes(asset.id))
+          .reduce<{ [key: string]: TDAsset }>((acc, asset) => {
+            acc[asset.id] = asset;
+            return acc;
+          }, {});
+
         records.push({
           type: command.id as ActionType,
           id: nanoid(),
           user: user.id,
-          data: command.after.document.pages[pageId],
+          data: {
+            shapes,
+            assets,
+          },
           slideId: pageId,
           start: this._actionStartTime || new Date().getTime(),
           end: Date.now(),
@@ -446,6 +475,13 @@ export class TrawApp {
     this.syncCamera();
   };
 
+  private handleAssetCreate = async (app: TldrawApp, file: File, id: string): Promise<string | false> => {
+    if (this.onAssetCreate) {
+      return await this.onAssetCreate(app, file, id);
+    }
+    return false;
+  };
+
   /*
    * Event handlers
    */
@@ -463,7 +499,7 @@ export class TrawApp {
     );
   }
 
-  emit<K extends keyof EventTypeHandlerMap>(eventType: K, event: Parameters<EventTypeHandlerMap[K]>[0]) {
+  private emit<K extends keyof EventTypeHandlerMap>(eventType: K, event: Parameters<EventTypeHandlerMap[K]>[0]) {
     const handlers = this.eventHandlersMap.get(eventType) || [];
     handlers.forEach((h: TrawEventHandler) => h(event as any));
   }
