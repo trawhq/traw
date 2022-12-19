@@ -43,6 +43,7 @@
     "@storybook/react": "^6.5.13",
     "@testing-library/jest-dom": "^5.14.1",
     "@testing-library/react": "^13.4.0",
+    "@types/dom-speech-recognition": "^0.0.1",
     "@types/jest": "^24.9.1",
     "@types/react": "^18.0.22",
     "@types/react-dom": "^18.0.7",
