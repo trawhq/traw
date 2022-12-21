@@ -1,6 +1,6 @@
 import { ComponentMeta, ComponentStory } from '@storybook/react';
-import { default as React } from 'react';
-import { TrawApp } from 'state';
+import { default as React, useEffect } from 'react';
+import { TrawApp, TrawEventType } from 'state';
 
 import { Traw } from 'Traw';
 import { TEST_DOCUMENT_1, TEST_USER_1 } from 'utils/testUtil';
@@ -24,7 +24,14 @@ export const Default = Template.bind({});
 Default.args = {};
 
 const SyncTemplate: ComponentStory<typeof Traw> = () => {
-  const [trawApp] = React.useState(
+  const [trawAppLeft] = React.useState(
+    new TrawApp({
+      user: TEST_USER_1,
+      document: TEST_DOCUMENT_1,
+      records: [],
+    }),
+  );
+  const [trawAppRight] = React.useState(
     new TrawApp({
       user: TEST_USER_1,
       document: TEST_DOCUMENT_1,
@@ -32,9 +39,21 @@ const SyncTemplate: ComponentStory<typeof Traw> = () => {
     }),
   );
 
+  useEffect(() => {
+    trawAppLeft.on(TrawEventType.CreateRecords, (e) => {
+      trawAppRight.addRecords(e.records);
+    });
+    trawAppRight.on(TrawEventType.CreateRecords, (e) => {
+      trawAppLeft.addRecords(e.records);
+    });
+    console.log('trawAppLeft', trawAppLeft);
+    console.log('trawAppRight', trawAppRight);
+  });
+
   return (
     <div className="h-screen flex -m-4">
-      <Traw app={trawApp} />
+      <Traw app={trawAppLeft} />
+      <Traw app={trawAppRight} />
     </div>
   );
 };
