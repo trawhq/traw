@@ -1,6 +1,6 @@
-import { Tldraw } from '@tldraw/tldraw';
+import { Tldraw, TldrawApp } from '@tldraw/tldraw';
 import React, { useCallback, useEffect } from 'react';
-import { useTrawApp } from '../../hooks/useTrawApp';
+import { useTrawApp } from 'hooks';
 
 export const Editor = () => {
   const TrawApp = useTrawApp();
@@ -22,7 +22,7 @@ export const Editor = () => {
   }, [handleResize]);
 
   const handleMount = useCallback(
-    (tldraw: any) => {
+    (tldraw: TldrawApp) => {
       TrawApp.registerApp(tldraw);
       handleResize();
     },

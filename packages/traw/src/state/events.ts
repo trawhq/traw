@@ -17,13 +17,18 @@ export interface CreateRecordsEvent extends TrawBaseEvent {
 export type CreateRecordsHandler = (event: CreateRecordsEvent) => void;
 
 /**
- * Event for newly created records
- *
- * Records added by TrawApp.addRecords will not trigger this event
+ * Event triggered when TldrawApp is changed.
  */
 export type TldrawAppChangeEvent = TrawBaseEvent;
 
 export type TldrawAppChangeHandler = (event: TldrawAppChangeEvent) => void;
+
+export interface PointerMoveEvent extends TrawBaseEvent {
+  x: number;
+  y: number;
+}
+
+export type PointerMoveHandler = (event: PointerMoveEvent) => void;
 
 /**
  * Traw Event Types
@@ -31,6 +36,7 @@ export type TldrawAppChangeHandler = (event: TldrawAppChangeEvent) => void;
 export enum TrawEventType {
   CreateRecords = 'createRecords',
   TldrawAppChange = 'tldrawAppChange',
+  PointerMove = 'pointerMove',
 }
 
 /**
@@ -39,9 +45,10 @@ export enum TrawEventType {
 export interface EventTypeHandlerMap {
   [TrawEventType.CreateRecords]: CreateRecordsHandler;
   [TrawEventType.TldrawAppChange]: TldrawAppChangeHandler;
+  [TrawEventType.PointerMove]: PointerMoveHandler;
 }
 
 /**
  * Union type of event handlers
  */
-export type TrawEventHandler = CreateRecordsHandler | TldrawAppChangeHandler;
+export type TrawEventHandler = CreateRecordsHandler | TldrawAppChangeHandler | PointerMoveHandler;
