@@ -4,6 +4,7 @@ import { nanoid } from 'nanoid';
 import { ActionType, TDCamera, TrawSnapshot, TRCamera, TRRecord, TRViewport } from 'types';
 import createVanilla, { StoreApi } from 'zustand/vanilla';
 import { DEFAULT_CAMERA, SLIDE_HEIGHT, SLIDE_RATIO, SLIDE_WIDTH } from '../constants';
+import { mountStoreDevtool } from 'simple-zustand-devtools';
 
 import produce from 'immer';
 import { CreateRecordsEvent, EventTypeHandlerMap, TrawEventHandler, TrawEventType } from 'state/events';
@@ -107,15 +108,7 @@ export class TrawApp {
   public onAssetCreate?: (app: TldrawApp, file: File, id: string) => Promise<string | false>;
 
   constructor({ user, document, records = [] }: TrawAppOptions) {
-    // dummy app
-    this.app = new TldrawApp();
-
     this.editorId = user.id;
-
-    const recordMap: Record<string, TRRecord> = {};
-    records.forEach((record) => {
-      recordMap[record.id] = record;
-    });
 
     this._state = {
       viewport: {
@@ -124,7 +117,7 @@ export class TrawApp {
       },
       camera: {
         [this.editorId]: {
-          [this.app.appState.currentPageId]: DEFAULT_CAMERA,
+          ['page']: DEFAULT_CAMERA,
         },
       },
       user,
@@ -132,8 +125,21 @@ export class TrawApp {
       records: {},
     };
     this.store = createVanilla(() => this._state);
+    if (process.env.NODE_ENV === 'development') {
+      mountStoreDevtool(`Traw Store - ${document.id}`, this.store);
+    }
 
     this.useStore = create(this.store);
+
+    this.app = new TldrawApp();
+
+    this.registerApp(this.app);
+
+    const recordMap: Record<string, TRRecord> = {};
+    records.forEach((record) => {
+      recordMap[record.id] = record;
+    });
+    this.applyRecordsFromFirst();
   }
 
   registerApp(app: TldrawApp) {
@@ -451,6 +457,7 @@ export class TrawApp {
         }
       }
     });
+    this.app.deletePage('page');
   };
 
   // setCamera = (camera: TDCamera, slideId: string) => {};
