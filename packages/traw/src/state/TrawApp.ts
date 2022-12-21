@@ -403,6 +403,7 @@ export class TrawApp {
 
   applyRecords = (records: TRRecord[]) => {
     let isCameraChanged = false;
+
     records.forEach((record) => {
       switch (record.type) {
         case 'create_page':
@@ -440,6 +441,7 @@ export class TrawApp {
           );
           break;
         case 'change_page':
+          if (!this.app.state.document.pageStates[record.data.id]) break;
           this.app.patchState({
             appState: {
               currentPageId: record.data.id,
@@ -460,7 +462,7 @@ export class TrawApp {
           break;
         case 'zoom':
           if (!record.slideId) break;
-          // TODO
+          if (!this.app.state.document.pageStates[record.slideId]) break;
           this.store.setState(
             produce((state) => {
               if (state.camera[record.user]) {
