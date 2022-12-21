@@ -402,6 +402,7 @@ export class TrawApp {
   };
 
   applyRecords = (records: TRRecord[]) => {
+    let isCameraChanged = false;
     records.forEach((record) => {
       switch (record.type) {
         case 'create_page':
@@ -459,17 +460,19 @@ export class TrawApp {
           break;
         case 'zoom':
           if (!record.slideId) break;
+          // TODO
           this.store.setState(
             produce((state) => {
               if (state.camera[record.user]) {
-                state.camera[record.user][record.slideId || ''] = DEFAULT_CAMERA;
+                state.camera[record.user][record.slideId || ''] = record.data.camera;
               } else {
                 state.camera[record.user] = {
-                  [record.slideId || '']: DEFAULT_CAMERA,
+                  [record.slideId || '']: record.data.camera,
                 };
               }
             }),
           );
+          isCameraChanged = true;
           break;
         case 'delete': {
           if (!record.slideId) break;
@@ -508,6 +511,9 @@ export class TrawApp {
         }
       }
     });
+    if (isCameraChanged) {
+      this.syncCamera();
+    }
     this.app.deletePage('page');
   };
 
