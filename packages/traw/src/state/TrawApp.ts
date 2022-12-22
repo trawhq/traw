@@ -127,7 +127,7 @@ export class TrawApp {
       document,
       records: {},
     };
-    this.store = createVanilla(() => this._state);
+    this.store = createVanilla<TrawSnapshot>(() => this._state);
     if (process.env.NODE_ENV === 'development') {
       mountStoreDevtool(`Traw Store - ${document.id}`, this.store);
     }
@@ -188,7 +188,14 @@ export class TrawApp {
     const currentPageId = camera[this.editorId].targetSlideId;
     if (!currentPageId) return;
 
-    if (currentPageId !== this.app.appState.currentPageId) {
+    if (currentPageId === 'page') {
+      this.store.setState(
+        produce((state) => {
+          state.camera[this.editorId].targetSlideId = this.app.appState.currentPageId;
+        }),
+      );
+      return;
+    } else if (currentPageId !== this.app.appState.currentPageId) {
       this.app.patchState({
         appState: {
           currentPageId,
@@ -437,138 +444,142 @@ export class TrawApp {
   applyRecords = (records: TRRecord[]) => {
     let isCameraChanged = false;
 
-    records.forEach((record) => {
-      switch (record.type) {
-        case 'create_page':
-          this.app.patchState({
-            document: {
-              pageStates: {
-                [record.data.id]: {
-                  id: record.data.id,
-                  selectedIds: [],
-                  camera: { point: [0, 0], zoom: 1 },
+    records
+      .sort((a, b) => a.start - b.start)
+      .forEach((record) => {
+        switch (record.type) {
+          case 'create_page':
+            this.app.patchState({
+              document: {
+                pageStates: {
+                  [record.data.id]: {
+                    id: record.data.id,
+                    selectedIds: [],
+                    camera: { point: [0, 0], zoom: 1 },
+                  },
+                },
+                pages: {
+                  [record.data.id]: {
+                    id: record.data.id,
+                    name: 'Page',
+                    childIndex: 2,
+                    shapes: {},
+                    bindings: {},
+                  },
                 },
               },
-              pages: {
-                [record.data.id]: {
-                  id: record.data.id,
-                  name: 'Page',
-                  childIndex: 2,
-                  shapes: {},
-                  bindings: {},
-                },
-              },
-            },
-          });
-          this.store.setState(
-            produce((state) => {
-              if (state.camera[record.user]) {
-                state.camera[record.user].cameras[record.data.id] = DEFAULT_CAMERA;
-              } else {
-                state.camera[record.user] = {
-                  cameras: {
-                    [record.data.id]: DEFAULT_CAMERA,
-                  },
-                };
-              }
-              state.camera[this.editorId].cameras[record.data.id] = DEFAULT_CAMERA;
-            }),
-          );
-          isCameraChanged = true;
-          break;
-        case 'change_page':
-          this.store.setState(
-            produce((state) => {
-              if (state.camera[record.user]) {
-                state.camera[record.user].targetSlideId = record.data.id;
-              } else {
-                state.camera[record.user] = {
-                  targetSlideId: record.data.id,
-                  cameras: {
-                    [record.data.id]: DEFAULT_CAMERA,
-                  },
-                };
-              }
-            }),
-          );
-          if (this.editorId === record.user) {
+            });
+            this.store.setState(
+              produce((state) => {
+                if (state.camera[record.user]) {
+                  state.camera[record.user].cameras[record.data.id] = DEFAULT_CAMERA;
+                } else {
+                  state.camera[record.user] = {
+                    targetSlideId: record.data.id,
+                    cameras: {
+                      [record.data.id]: DEFAULT_CAMERA,
+                    },
+                  };
+                }
+                state.camera[this.editorId].cameras[record.data.id] = DEFAULT_CAMERA;
+              }),
+            );
             isCameraChanged = true;
-          }
-          break;
-        case 'delete_page':
-          this.app.patchState({
-            document: {
-              pageStates: {
-                [record.data.id]: undefined,
+            break;
+          case 'change_page':
+            this.store.setState(
+              produce((state) => {
+                if (state.camera[record.user]) {
+                  state.camera[record.user].targetSlideId = record.data.id;
+                } else {
+                  state.camera[record.user] = {
+                    targetSlideId: record.data.id,
+                    cameras: {
+                      [record.data.id]: DEFAULT_CAMERA,
+                    },
+                  };
+                }
+              }),
+            );
+            if (this.editorId === record.user) {
+              isCameraChanged = true;
+            }
+            break;
+          case 'delete_page':
+            this.app.patchState({
+              document: {
+                pageStates: {
+                  [record.data.id]: undefined,
+                },
+                pages: {
+                  [record.data.id]: undefined,
+                },
               },
-              pages: {
-                [record.data.id]: undefined,
-              },
-            },
-          });
-          break;
-        case 'zoom':
-          if (!record.slideId) break;
-          if (!this.app.state.document.pageStates[record.slideId]) break;
-          this.store.setState(
-            produce((state) => {
-              if (state.camera[record.user]) {
-                state.camera[record.user].cameras = {
-                  ...state.camera[record.user].cameras,
-                  [record.slideId || '']: record.data.camera,
-                };
-              } else {
-                state.camera[record.user] = {
-                  cameras: {
+            });
+            break;
+          case 'zoom':
+            if (!record.slideId) break;
+            if (!this.app.state.document.pageStates[record.slideId]) break;
+            this.store.setState(
+              produce((state) => {
+                if (state.camera[record.user]) {
+                  state.camera[record.user].cameras = {
+                    ...state.camera[record.user].cameras,
                     [record.slideId || '']: record.data.camera,
-                  },
-                };
-              }
-            }),
-          );
-          isCameraChanged = true;
-          break;
-        case 'delete': {
-          if (!record.slideId) break;
-          this.app.patchState({
-            document: {
-              pages: {
-                [record.slideId]: {
-                  shapes: record.data.shapes.reduce((acc: Record<string, undefined>, shapeId: string) => {
-                    acc[shapeId] = undefined;
-                    return acc;
-                  }, {}),
-                },
-              },
-            },
-          });
-          break;
-        }
-        default: {
-          const { data, slideId } = record;
-          if (!slideId) break;
-          this.app.patchState({
-            document: {
-              pages: {
-                [slideId]: {
-                  shapes: {
-                    ...data.shapes,
+                  };
+                } else {
+                  state.camera[record.user] = {
+                    targetSlideId: record.slideId,
+                    cameras: {
+                      [record.slideId || '']: record.data.camera,
+                    },
+                  };
+                }
+              }),
+            );
+            isCameraChanged = true;
+            break;
+          case 'delete': {
+            if (!record.slideId) break;
+            this.app.patchState({
+              document: {
+                pages: {
+                  [record.slideId]: {
+                    shapes: record.data.shapes.reduce((acc: Record<string, undefined>, shapeId: string) => {
+                      acc[shapeId] = undefined;
+                      return acc;
+                    }, {}),
                   },
                 },
               },
-              assets: {
-                ...data.assets,
+            });
+            break;
+          }
+          default: {
+            const { data, slideId } = record;
+            if (!slideId) break;
+            this.app.patchState({
+              document: {
+                pages: {
+                  [slideId]: {
+                    shapes: {
+                      ...data.shapes,
+                    },
+                  },
+                },
+                assets: {
+                  ...data.assets,
+                },
               },
-            },
-          });
-          break;
+            });
+            break;
+          }
         }
-      }
-    });
+      });
+    this.app.deletePage('page');
     if (isCameraChanged) {
       this.syncCamera();
     }
-    this.app.deletePage('page');
   };
 
   // setCamera = (camera: TDCamera, slideId: string) => {};

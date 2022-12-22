@@ -41,20 +41,22 @@ const SlideList = ({ canAddSlide, handleAddSlide, handleGridView }: SlideListPro
     <div className="flex flex-row gap-3 overflow-hidden justify-between flex-1">
       <div className="overflow-x-auto flex flex-1">
         <div className="flex flex-row gap-3">
-          {Object.values(pages).map((page, index) => (
-            <SlideListItem
-              key={page.id}
-              index={index + 1}
-              page={page}
-              viewerCount={viewerCount}
-              selectState={page.id === currentPageId ? SlideListItemState.SELECTED : selectState}
-              size="list"
-              handleClick={handleSlideClick}
-              setRef={(ref) => {
-                slideRef.current[page.id] = ref;
-              }}
-            />
-          ))}
+          {Object.values(pages).map((page, index) =>
+            page ? (
+              <SlideListItem
+                key={page.id}
+                index={index + 1}
+                page={page}
+                viewerCount={viewerCount}
+                selectState={page.id === currentPageId ? SlideListItemState.SELECTED : selectState}
+                size="list"
+                handleClick={handleSlideClick}
+                setRef={(ref) => {
+                  slideRef.current[page.id] = ref;
+                }}
+              />
+            ) : null,
+          )}
         </div>
       </div>
       <div className="flex flex-col justify-between basis-[25px] sm:basis-[35px] py-1 sm:py-0">
