@@ -1,63 +1,81 @@
-import { onFileCreatedHandler, TrawVoiceRecorder } from 'recorder/TrawVoiceRecorder';
-import { onRecognizedHandler, TrawSpeechRecognizer } from 'recorder/TrawSpeechRecognizer';
+import { TrawVoiceRecorder } from 'recorder/TrawVoiceRecorder';
+import { SpeechRecognitionResult, TrawSpeechRecognizer } from 'recorder/TrawSpeechRecognizer';
 import { onTalkingHandler, TrawTalkingDetector } from 'recorder/TrawTalkingDetector';
 import { MediaStreamManager } from 'recorder/MediaStreamManager';
-import { BlockVoiceIdMapper } from 'recorder/BlockVoiceIdMapper';
+import {
+  onBlockCreatedHandler,
+  onCreatingBlockUpdatedHandler,
+  onVoiceCreatedHandler,
+  TrawVoiceBlockGenerator,
+} from 'recorder/TrawVoiceBlockGenerator';
 
 export interface TrawRecorderOptions {
   audioDeviceId?: string;
-  /**
-   * @default 44100
-   */
   audioBitsPerSecond?: number;
-
   lang?: string;
-
   audioContext?: AudioContext;
+  silenceTimeout?: number;
 
-  onFileCreated?: onFileCreatedHandler;
-  onRecognized?: onRecognizedHandler;
   onTalking?: onTalkingHandler;
+
+  onCreatingBlockUpdate?: onCreatingBlockUpdatedHandler;
+  onBlockCreated?: onBlockCreatedHandler;
+  onVoiceCreated?: onVoiceCreatedHandler;
 }
 
 export class TrawRecorder {
   private _audioContext: AudioContext;
-
   private _mediaStreamManager: MediaStreamManager;
-
+  private _trawVoiceBlockGenerator: TrawVoiceBlockGenerator;
   private _trawVoiceRecorder: TrawVoiceRecorder;
-
   private _trawTalkingDetector: TrawTalkingDetector;
-
   private _trawSpeechRecognizer: TrawSpeechRecognizer;
 
-  private _blockVoiceIdMapper: BlockVoiceIdMapper;
+  public onTalking?: onTalkingHandler;
+  public onCreatingBlockUpdate?: onCreatingBlockUpdatedHandler;
+  public onBlockCreated?: onBlockCreatedHandler;
+  public onVoiceCreated?: onVoiceCreatedHandler;
 
   constructor({
     audioDeviceId,
     audioBitsPerSecond,
     lang,
     audioContext,
-    onFileCreated,
-    onRecognized,
+    silenceTimeout,
     onTalking,
+    onCreatingBlockUpdate,
+    onBlockCreated,
+    onVoiceCreated,
   }: TrawRecorderOptions) {
+    this.onTalking = onTalking;
+    this.onCreatingBlockUpdate = onCreatingBlockUpdate;
+    this.onBlockCreated = onBlockCreated;
+    this.onVoiceCreated = onVoiceCreated;
+
     this._audioContext = audioContext ?? new AudioContext();
-    this._mediaStreamManager = new MediaStreamManager({ audioDeviceId, onChangeMediaStream: this.onChangeMediaStream });
+    this._mediaStreamManager = new MediaStreamManager({
+      audioDeviceId,
+      onChangeMediaStream: this._onChangeMediaStream,
+    });
+    this._trawVoiceBlockGenerator = new TrawVoiceBlockGenerator({
+      onCreatingBlockUpdated: this.onCreatingBlockUpdate,
+      onBlockCreated: this.onBlockCreated,
+      onVoiceCreated: this.onVoiceCreated,
+    });
     this._trawVoiceRecorder = new TrawVoiceRecorder({
       audioBitsPerSecond,
-      onFileCreated,
+      onFileCreated: this._onFileCreated,
     });
     this._trawTalkingDetector = new TrawTalkingDetector({
       audioContext: this._audioContext,
-      onTalking,
-      onSilence: this.onSilence,
+      onTalking: this._onTalking,
+      onSilence: this._onSilence,
+      silenceTimeout,
     });
     this._trawSpeechRecognizer = new TrawSpeechRecognizer({
       lang,
-      onRecognized,
+      onRecognized: this._onRecognized,
     });
-    this._blockVoiceIdMapper = new BlockVoiceIdMapper();
   }
 
   public static isSupported(): boolean {
@@ -69,6 +87,13 @@ export class TrawRecorder {
   }
 
   public startRecording = async (): Promise<void> => {
+    if (this._audioContext.state === 'suspended') {
+      await this._audioContext.resume();
+    } else if (this._audioContext.state === 'closed') {
+      this._audioContext = new AudioContext();
+      this._trawTalkingDetector.updateAudioContext(this._audioContext);
+    }
+
     await this._mediaStreamManager.startMediaStream();
     this._trawSpeechRecognizer.startRecognition();
     this._trawVoiceRecorder.startVoiceRecorder();
@@ -90,12 +115,28 @@ export class TrawRecorder {
     this._trawSpeechRecognizer.startRecognition();
   };
 
-  private onChangeMediaStream = (mediaStream?: MediaStream) => {
+  private _onChangeMediaStream = (mediaStream?: MediaStream) => {
     this._trawVoiceRecorder.updateMediaStream(mediaStream);
     this._trawTalkingDetector.updateMediaStream(mediaStream);
   };
 
-  private onSilence = () => {
+  private _onTalking = (isTalking: boolean) => {
+    if (isTalking) {
+      this._trawVoiceBlockGenerator.onStartTalking();
+    }
+    this.onTalking?.(isTalking);
+  };
+
+  private _onSilence = () => {
+    this._trawVoiceBlockGenerator.createBlock();
     this._trawVoiceRecorder.splitVoiceChunk();
+  };
+
+  private _onRecognized = (action: 'add' | 'update', result: SpeechRecognitionResult) => {
+    this._trawVoiceBlockGenerator.onRecognized(action, result);
+  };
+
+  private _onFileCreated = (file: File, ext: string) => {
+    this._trawVoiceBlockGenerator.createBlockVoice(file, ext);
   };
 }

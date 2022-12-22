@@ -1,7 +1,17 @@
 import { TDAsset, TDToolType, TDUser, TldrawApp, TldrawCommand, TldrawPatch } from '@tldraw/tldraw';
 import debounce from 'lodash/debounce';
 import { nanoid } from 'nanoid';
-import { ActionType, TDCamera, TrawSnapshot, TRCamera, TRRecord, TRViewport } from 'types';
+import {
+  ActionType,
+  TDCamera,
+  TRBlockType,
+  TrawSnapshot,
+  TRBlock,
+  TRCamera,
+  TRRecord,
+  TRViewport,
+  TRBlockVoice,
+} from 'types';
 import createVanilla, { StoreApi } from 'zustand/vanilla';
 import { DEFAULT_CAMERA, SLIDE_HEIGHT, SLIDE_RATIO, SLIDE_WIDTH } from '../constants';
 import { mountStoreDevtool } from 'simple-zustand-devtools';
@@ -132,6 +142,7 @@ export class TrawApp {
       user,
       document,
       records: {},
+      blocks: {},
     };
     this.store = createVanilla<TrawSnapshot>(() => this._state);
     if (process.env.NODE_ENV === 'development') {
@@ -151,14 +162,48 @@ export class TrawApp {
     this.applyRecordsFromFirst();
 
     this._trawRecorder = new TrawRecorder({
-      onRecognized: (action, payload) => {
-        console.log('onRecognized', action, payload);
+      lang: 'ko-KR',
+      onCreatingBlockUpdate: (payload) => {
+        console.log('[TrawApp.trawRecorder] onCreatingBlockUpdate', payload);
+      },
+      onBlockCreated: ({ blockId, text, time, voiceStart, voiceEnd }) => {
+        console.log('[TrawApp.trawRecorder] onBlockCreated', blockId, text, time, voiceStart, voiceEnd);
+
+        this.store.setState(
+          produce((state) => {
+            const block: TRBlock = {
+              id: blockId,
+              time,
+              voiceStart,
+              voiceEnd,
+              text,
+              isActive: true,
+              type: TRBlockType.TALK,
+              userId: this.editorId,
+              voices: [],
+            };
+
+            state.blocks[block.id] = block;
+          }),
+        );
+      },
+      onVoiceCreated: async ({ voiceId, file, blockId, ext }) => {
+        console.log('[TrawApp.trawRecorder] onVoiceCreated', voiceId, file, blockId, ext);
+
+        this.store.setState(
+          produce((state) => {
+            const blockVoice: TRBlockVoice = {
+              blockId,
+              voiceId,
+              ext,
+            };
+
+            state.blocks[blockId]?.voices.push(blockVoice);
+          }),
+        );
       },
       onTalking: (isTalking: boolean) => {
-        console.log('onTalking', isTalking);
-      },
-      onFileCreated: (file: File) => {
-        console.log('onFileCreated', file);
+        console.log('[TrawApp.trawRecorder] onTalking', isTalking);
       },
     });
   }

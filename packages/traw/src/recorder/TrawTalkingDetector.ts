@@ -31,8 +31,6 @@ export class TrawTalkingDetector {
 
   private _silenceTimeoutMilliseconds: number;
 
-  private _isTalking = false;
-
   // Timeout return value
   private _silenceTimeoutId?: number;
 
@@ -51,10 +49,6 @@ export class TrawTalkingDetector {
     this.initAudioDetection();
   }
 
-  public get isTalking(): boolean {
-    return this._isTalking;
-  }
-
   public updateMediaStream(mediaStream: MediaStream | undefined) {
     if (this._mediaStream !== mediaStream) {
       this._mediaStream = mediaStream;
@@ -62,11 +56,15 @@ export class TrawTalkingDetector {
     }
   }
 
+  public updateAudioContext(audioContext: AudioContext) {
+    this._audioContext = audioContext;
+    this.initAudioDetection();
+  }
+
   /**
    * Callback for speech start event
    */
   public onSpeechStart = () => {
-    this._isTalking = true;
     this.onTalking?.(true);
 
     if (this._silenceTimeoutId) {
@@ -78,7 +76,6 @@ export class TrawTalkingDetector {
    * Callback for speech end event
    */
   public onSpeechEnd = () => {
-    this._isTalking = false;
     this.onTalking?.(false);
 
     this._silenceTimeoutId = self.setTimeout(() => {
