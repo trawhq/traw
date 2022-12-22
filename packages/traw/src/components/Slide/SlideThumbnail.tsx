@@ -9,13 +9,13 @@ interface SlideThumbnailProps {
   page: TDPage;
 }
 
-const SLideThumbnail = ({ page }: SlideThumbnailProps) => {
+const SlideThumbnail = ({ page }: SlideThumbnailProps) => {
   const slideDomRef = React.useRef<HTMLDivElement>(null);
 
   const app = useTrawApp();
   const tldrawApp = useTldrawApp();
   const state = tldrawApp.useStore();
-  const camera = app.useStore((state) => state.camera[state.user.id][page.id]);
+  const camera = app.useStore((state) => state.camera[state.user.id].cameras[page.id]);
   const tlCamera = useMemo(() => {
     return convertCameraTRtoTD(camera, { width: 133, height: 75 });
   }, [camera]);
@@ -44,4 +44,4 @@ const SLideThumbnail = ({ page }: SlideThumbnailProps) => {
   );
 };
 
-export default SLideThumbnail;
+export default SlideThumbnail;

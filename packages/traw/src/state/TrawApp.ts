@@ -117,7 +117,10 @@ export class TrawApp {
       },
       camera: {
         [this.editorId]: {
-          ['page']: DEFAULT_CAMERA,
+          targetSlideId: 'page',
+          cameras: {
+            ['page']: DEFAULT_CAMERA,
+          },
         },
       },
       user,
@@ -181,9 +184,19 @@ export class TrawApp {
   };
 
   syncCamera = () => {
-    const currentPageId = this.app.appState.currentPageId;
     const { viewport, camera } = this.store.getState();
-    const trCamera = camera[this.editorId][currentPageId];
+    const currentPageId = camera[this.editorId].targetSlideId;
+    if (!currentPageId) return;
+
+    if (currentPageId !== this.app.appState.currentPageId) {
+      this.app.patchState({
+        appState: {
+          currentPageId,
+        },
+      });
+    }
+
+    const trCamera = camera[this.editorId].cameras[currentPageId];
     if (!trCamera) return;
 
     const tdCamera = convertCameraTRtoTD(trCamera, viewport);
@@ -192,7 +205,7 @@ export class TrawApp {
 
   getCamera = (slideId: string) => {
     const { camera } = this.store.getState();
-    return camera[this.editorId][slideId];
+    return camera[this.editorId].cameras[slideId];
   };
 
   handleCameraChange = (camera: TDCamera) => {
@@ -201,7 +214,7 @@ export class TrawApp {
 
     this.store.setState(
       produce((state) => {
-        state.camera[this.editorId][currentPageId] = trawCamera;
+        state.camera[this.editorId].cameras[currentPageId] = trawCamera;
       }),
     );
 
@@ -430,23 +443,37 @@ export class TrawApp {
           this.store.setState(
             produce((state) => {
               if (state.camera[record.user]) {
-                state.camera[record.user][record.data.id] = DEFAULT_CAMERA;
+                state.camera[record.user].cameras[record.data.id] = DEFAULT_CAMERA;
               } else {
                 state.camera[record.user] = {
-                  [record.data.id]: DEFAULT_CAMERA,
+                  cameras: {
+                    [record.data.id]: DEFAULT_CAMERA,
+                  },
                 };
               }
-              state.camera[this.editorId][record.data.id] = DEFAULT_CAMERA;
+              state.camera[this.editorId].cameras[record.data.id] = DEFAULT_CAMERA;
             }),
           );
+          isCameraChanged = true;
           break;
         case 'change_page':
-          if (!this.app.state.document.pageStates[record.data.id]) break;
-          this.app.patchState({
-            appState: {
-              currentPageId: record.data.id,
-            },
-          });
+          this.store.setState(
+            produce((state) => {
+              if (state.camera[record.user]) {
+                state.camera[record.user].targetSlideId = record.data.id;
+              } else {
+                state.camera[record.user] = {
+                  targetSlideId: record.data.id,
+                  cameras: {
+                    [record.data.id]: DEFAULT_CAMERA,
+                  },
+                };
+              }
+            }),
+          );
+          if (this.editorId === record.user) {
+            isCameraChanged = true;
+          }
           break;
         case 'delete_page':
           this.app.patchState({
@@ -466,10 +493,15 @@ export class TrawApp {
           this.store.setState(
             produce((state) => {
               if (state.camera[record.user]) {
-                state.camera[record.user][record.slideId || ''] = record.data.camera;
+                state.camera[record.user].cameras = {
+                  ...state.camera[record.user].cameras,
+                  [record.slideId || '']: record.data.camera,
+                };
               } else {
                 state.camera[record.user] = {
-                  [record.slideId || '']: record.data.camera,
+                  cameras: {
+                    [record.slideId || '']: record.data.camera,
+                  },
                 };
               }
             }),
@@ -525,7 +557,8 @@ export class TrawApp {
     const pageId = nanoid();
     this.store.setState(
       produce((state) => {
-        state.camera[this.editorId][pageId] = DEFAULT_CAMERA;
+        state.camera[this.editorId].targetSlideId = pageId;
+        state.camera[this.editorId].cameras[pageId] = DEFAULT_CAMERA;
       }),
     );
     this.app.createPage(pageId);
@@ -537,6 +570,11 @@ export class TrawApp {
   };
 
   selectSlide = (id: string) => {
+    this.store.setState(
+      produce((state) => {
+        state.camera[this.editorId].targetSlideId = id;
+      }),
+    );
     this.app.changePage(id);
     this.syncCamera();
   };
