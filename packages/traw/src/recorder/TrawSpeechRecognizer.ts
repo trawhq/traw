@@ -6,85 +6,107 @@ export type SpeechRecognitionResult = {
   text: string;
 };
 
-export type onRecognitionHandler = (result: SpeechRecognitionResult) => void;
+export type onRecognizedHandler = (action: 'add' | 'update', result: SpeechRecognitionResult) => void;
 
 const SpeechRecognition = self.SpeechRecognition || self.webkitSpeechRecognition;
 
-export interface TrawSpeechRecognizerOption {
+export interface TrawSpeechRecognizerOptions {
   lang?: string;
-  onNew?: onRecognitionHandler;
-  onUpdate?: onRecognitionHandler;
+  onRecognized?: onRecognizedHandler;
 }
 
 export class TrawSpeechRecognizer {
-  private lang: string;
+  private _lang: string;
 
   /**
    * Speech recognizer
    */
-  private speechRecognition?: SpeechRecognition;
+  private _speechRecognition?: SpeechRecognition;
 
-  private instance: number;
-  private lastIndex: number;
-  private currentSentence: string;
+  private _instance: number;
+  private _lastIndex: number;
+  private _currentSentence: string;
 
-  public onNew?: onRecognitionHandler;
-  public onUpdate?: onRecognitionHandler;
+  public onRecognized?: onRecognizedHandler;
 
-  constructor({ lang = 'en-US', onNew, onUpdate }: TrawSpeechRecognizerOption) {
+  constructor({ lang = 'en-US', onRecognized }: TrawSpeechRecognizerOptions) {
     if (!TrawSpeechRecognizer.isSupported()) {
       throw new UnsupportedBrowserException('SpeechRecognition is not supported');
     }
-    this.lang = lang;
-    this.instance = 0;
-    this.lastIndex = 0;
-    this.currentSentence = '';
+    this._lang = lang;
+    this._instance = 0;
+    this._lastIndex = 0;
+    this._currentSentence = '';
 
-    this.speechRecognition = this.initSpeechRecognition();
+    this._speechRecognition = this.initSpeechRecognition();
 
-    this.onNew = onNew;
-    this.onUpdate = onUpdate;
+    this.onRecognized = onRecognized;
   }
 
   public static isSupported() {
     return 'SpeechRecognition' in self || 'webkitSpeechRecognition' in self;
   }
 
+  /**
+   * Starts speech recognition
+   */
+  public startRecognition = () => {
+    if (this._speechRecognition) {
+      this._speechRecognition.start();
+    } else {
+      this._speechRecognition = this.initSpeechRecognition();
+      this._speechRecognition.start();
+    }
+  };
+
+  /**
+   * Stops speech recognition
+   */
+  public stopRecognition() {
+    if (this._speechRecognition) {
+      this._speechRecognition.stop();
+      this._speechRecognition.removeEventListener('result', this.onResult);
+      this._speechRecognition.removeEventListener('end', this.onEnd);
+      this._speechRecognition.removeEventListener('error', this.onError);
+      this._speechRecognition = undefined;
+    }
+  }
+
   private onResult = (event: SpeechRecognitionEvent) => {
     const currentIndex = event.resultIndex;
     const text = event.results[currentIndex][0].transcript;
 
-    if (this.lastIndex < currentIndex) {
-      this.lastIndex = currentIndex;
-      this.onNew?.({
-        instance: this.instance,
+    if (this._lastIndex < currentIndex) {
+      this._lastIndex = currentIndex;
+      this.onRecognized?.('add', {
+        instance: this._instance,
         index: currentIndex,
         text,
       });
     } else {
-      this.onUpdate?.({
-        instance: this.instance,
-        index: this.lastIndex,
+      this.onRecognized?.('update', {
+        instance: this._instance,
+        index: this._lastIndex,
         text,
       });
     }
   };
 
   private onError = () => {
-    if (this.speechRecognition) {
+    if (this._speechRecognition) {
       this.restartRecognition();
     }
   };
 
   private onEnd = () => {
-    this.instance += 1;
-    this.lastIndex = -1;
+    this._instance += 1;
+    this._lastIndex = -1;
     this.restartRecognition();
   };
 
   private initSpeechRecognition = (): SpeechRecognition => {
     const speechRecognition = new SpeechRecognition();
-    speechRecognition.lang = this.lang;
+    speechRecognition.lang = this._lang;
     speechRecognition.continuous = true;
     speechRecognition.interimResults = true;
     speechRecognition.maxAlternatives = 1;
@@ -99,24 +121,5 @@ export class TrawSpeechRecognizer {
   private restartRecognition() {
     this.stopRecognition();
     this.startRecognition();
-  }
-
-  public startRecognition = () => {
-    if (this.speechRecognition) {
-      this.speechRecognition.start();
-    } else {
-      this.speechRecognition = this.initSpeechRecognition();
-      this.speechRecognition.start();
-    }
-  };
-
-  public stopRecognition() {
-    if (this.speechRecognition) {
-      this.speechRecognition.stop();
-      this.speechRecognition.removeEventListener('result', this.onResult);
-      this.speechRecognition.removeEventListener('end', this.onEnd);
-      this.speechRecognition.removeEventListener('error', this.onError);
-      this.speechRecognition = undefined;
-    }
   }
 }

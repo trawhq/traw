@@ -10,6 +10,7 @@ import produce from 'immer';
 import { CreateRecordsEvent, EventTypeHandlerMap, TrawEventHandler, TrawEventType } from 'state/events';
 import create, { UseBoundStore } from 'zustand';
 import { TrawAppOptions } from './TrawAppOptions';
+import { TrawRecorder } from 'recorder/TrawRecorder';
 
 export const convertCameraTRtoTD = (camera: TRCamera, viewport: TRViewport): TDCamera => {
   const ratio = viewport.width / viewport.height;
@@ -96,6 +97,11 @@ export class TrawApp {
   private _actionStartTime: number | undefined;
 
   /**
+   * Traw recorder
+   */
+  private _trawRecorder: TrawRecorder;
+
+  /**
    * A React hook for accessing the zustand store.
    */
   public readonly useStore: UseBoundStore<StoreApi<TrawSnapshot>>;
@@ -143,6 +149,18 @@ export class TrawApp {
       recordMap[record.id] = record;
     });
     this.applyRecordsFromFirst();
+
+    this._trawRecorder = new TrawRecorder({
+      onRecognized: (action, payload) => {
+        console.log('onRecognized', action, payload);
+      },
+      onTalking: (isTalking: boolean) => {
+        console.log('onTalking', isTalking);
+      },
+      onFileCreated: (file: File) => {
+        console.log('onFileCreated', file);
+      },
+    });
   }
 
   registerApp(app: TldrawApp) {
@@ -628,6 +646,14 @@ export class TrawApp {
     );
     this.app.changePage(id);
     this.syncCamera();
+  };
+
+  startRecording = async (): Promise<void> => {
+    await this._trawRecorder.startRecording();
+  };
+
+  stopRecording = () => {
+    this._trawRecorder.stopRecording();
   };
 
   private handleAssetCreate = async (app: TldrawApp, file: File, id: string): Promise<string | false> => {
