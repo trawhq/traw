@@ -233,11 +233,9 @@ export class TrawApp {
   };
 
   updateCameraFromOthers = (slideId: string, camera: TRCamera) => {
-    const currentPageId = this.app.appState.currentPageId;
-
     this.store.setState(
       produce((state) => {
-        state.camera[this.editorId].cameras[currentPageId] = camera;
+        state.camera[this.editorId].cameras[slideId] = camera;
         if (state.camera[this.editorId].targetSlideId !== slideId) {
           state.camera[this.editorId].targetSlideId = slideId;
         }
