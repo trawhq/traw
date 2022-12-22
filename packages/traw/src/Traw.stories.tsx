@@ -43,6 +43,9 @@ const SyncTemplate: ComponentStory<typeof Traw> = () => {
     trawAppLeft.on(TrawEventType.CreateRecords, (e) => {
       trawAppRight.addRecords(e.records);
     });
+    trawAppLeft.on(TrawEventType.CameraChange, (e) => {
+      console.log(e);
+    });
     trawAppRight.on(TrawEventType.CreateRecords, (e) => {
       trawAppLeft.addRecords(e.records);
     });

@@ -222,6 +222,26 @@ export class TrawApp {
       this._actionStartTime = Date.now();
     }
     this.handleCameraRecord(trawCamera);
+    this.emit(TrawEventType.CameraChange, { tldrawApp: this.app, targetSlide: currentPageId, camera: trawCamera });
+  };
+
+  updateCameraFromOthers = (slideId: string, camera: TRCamera) => {
+    const currentPageId = this.app.appState.currentPageId;
+
+    this.store.setState(
+      produce((state) => {
+        state.camera[this.editorId].cameras[currentPageId] = camera;
+        if (state.camera[this.editorId].targetSlideId !== slideId) {
+          state.camera[this.editorId].targetSlideId = slideId;
+        }
+      }),
+    );
+    this.syncCamera();
+
+    if (this._actionStartTime === 0) {
+      this._actionStartTime = Date.now();
+    }
+    this.handleCameraRecord(camera);
   };
 
   handleCameraRecord = debounce((camera: TRCamera) => {

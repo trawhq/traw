@@ -1,4 +1,4 @@
-import { TRRecord } from 'types';
+import { TRCamera, TRRecord } from 'types';
 import { TldrawApp } from '@tldraw/tldraw';
 
 export interface TrawBaseEvent {
@@ -30,6 +30,13 @@ export interface PointerMoveEvent extends TrawBaseEvent {
 
 export type PointerMoveHandler = (event: PointerMoveEvent) => void;
 
+export interface CameraChangeEvent extends TrawBaseEvent {
+  targetSlide: string;
+  camera: TRCamera;
+}
+
+export type CameraChangeHandler = (event: CameraChangeEvent) => void;
+
 /**
  * Traw Event Types
  */
@@ -37,6 +44,7 @@ export enum TrawEventType {
   CreateRecords = 'createRecords',
   TldrawAppChange = 'tldrawAppChange',
   PointerMove = 'pointerMove',
+  CameraChange = 'cameraChange',
 }
 
 /**
@@ -46,9 +54,10 @@ export interface EventTypeHandlerMap {
   [TrawEventType.CreateRecords]: CreateRecordsHandler;
   [TrawEventType.TldrawAppChange]: TldrawAppChangeHandler;
   [TrawEventType.PointerMove]: PointerMoveHandler;
+  [TrawEventType.CameraChange]: CameraChangeHandler;
 }
 
 /**
  * Union type of event handlers
  */
-export type TrawEventHandler = CreateRecordsHandler | TldrawAppChangeHandler | PointerMoveHandler;
+export type TrawEventHandler = CreateRecordsHandler | TldrawAppChangeHandler | PointerMoveHandler | CameraChangeHandler;
