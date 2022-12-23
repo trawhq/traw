@@ -16,7 +16,7 @@ export interface TrawSpeechRecognizerOptions {
 }
 
 export class TrawSpeechRecognizer {
-  private _lang: string;
+  private readonly _lang: string;
 
   /**
    * Speech recognizer
@@ -35,7 +35,7 @@ export class TrawSpeechRecognizer {
     }
     this._lang = lang;
     this._instance = 0;
-    this._lastIndex = 0;
+    this._lastIndex = -1;
     this._currentSentence = '';
 
     this._speechRecognition = this.initSpeechRecognition();
@@ -62,17 +62,19 @@ export class TrawSpeechRecognizer {
    */
   public stopRecognition() {
     if (this._speechRecognition) {
-      this._speechRecognition.stop();
       this._speechRecognition.removeEventListener('result', this.onResult);
       this._speechRecognition.removeEventListener('end', this.onEnd);
       this._speechRecognition.removeEventListener('error', this.onError);
+      this._speechRecognition.stop();
       this._speechRecognition = undefined;
+      this._instance += 1;
+      this._lastIndex = -1;
     }
   }
 
-  private onResult = (event: SpeechRecognitionEvent) => {
-    const currentIndex = event.resultIndex;
-    const text = event.results[currentIndex][0].transcript;
+  private onResult = (e: SpeechRecognitionEvent) => {
+    const currentIndex = e.resultIndex;
+    const text = e.results[currentIndex][0].transcript;
 
     if (this._lastIndex < currentIndex) {
       this._lastIndex = currentIndex;
@@ -90,17 +92,15 @@ export class TrawSpeechRecognizer {
     }
   };
 
-  private onError = (e: any) => {
-    console.log('[TrawSpeechRecognizer] onError', e);
-    if (this._speechRecognition) {
+  private onError = (e: SpeechRecognitionErrorEvent) => {
+    console.error('[TrawSpeechRecognizer] onError', e);
+    if (e.error !== 'aborted') {
       this.restartRecognition();
     }
   };
 
   private onEnd = () => {
-    this._instance += 1;
-    this._lastIndex = -1;
-    this.restartRecognition();
+    this.startRecognition();
   };
 
   private initSpeechRecognition = (): SpeechRecognition => {
