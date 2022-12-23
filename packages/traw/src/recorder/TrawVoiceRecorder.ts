@@ -43,7 +43,7 @@ export class TrawVoiceRecorder {
   }
 
   public static isSupported = (): boolean => {
-    return !!TrawVoiceRecorder.getSupportedMimeType();
+    return !!self.MediaRecorder && !!TrawVoiceRecorder.getSupportedMimeType();
   };
 
   /**

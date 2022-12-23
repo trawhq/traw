@@ -111,7 +111,7 @@ export class TrawApp {
   /**
    * Traw recorder
    */
-  private _trawRecorder: TrawRecorder;
+  private _trawRecorder?: TrawRecorder;
 
   /**
    * A React hook for accessing the zustand store.
@@ -209,67 +209,69 @@ export class TrawApp {
     });
     this.applyRecordsFromFirst();
 
-    this._trawRecorder = new TrawRecorder({
-      lang: 'ko-KR',
-      onCreatingBlockUpdate: (text) => {
-        this.store.setState(
-          produce((state) => {
-            state.recording.recognizedText = text;
-          }),
-        );
-      },
-      onBlockCreated: ({ blockId, text, time, voiceStart, voiceEnd }) => {
-        this.store.setState((state) =>
-          produce(state, (draft) => {
-            const block: TRBlock = {
-              id: blockId,
-              time,
-              voiceStart,
-              voiceEnd,
-              text,
-              isActive: true,
-              type: TRBlockType.TALK,
-              userId: this.editorId,
-              voices: [],
-            };
-
-            draft.blocks[block.id] = block;
-          }),
-        );
-      },
-      onVoiceCreated: async ({ voiceId, file, blockId, ext }) => {
-        let url: string | false;
-        if (this.onAssetCreate) {
-          url = await this.onAssetCreate(this.app, file, voiceId);
-        } else {
-          url = await encodeFile(file);
-        }
-
-        if (url) {
-          this.store.setState((state) =>
-            produce(state, (draft) => {
-              const blockVoice: TRBlockVoice = {
-                blockId,
-                voiceId,
-                ext,
-                url: url as string,
-              };
-
-              draft.blocks[blockId]?.voices.push(blockVoice);
+    if (TrawRecorder.isSupported()) {
+      this._trawRecorder = new TrawRecorder({
+        lang: 'ko-KR',
+        onCreatingBlockUpdate: (text) => {
+          this.store.setState(
+            produce((state) => {
+              state.recording.recognizedText = text;
             }),
           );
-        } else {
-          console.log('Failed to get voice URL');
-        }
-      },
-      onTalking: (isTalking: boolean) => {
-        this.store.setState(
-          produce((state: TrawSnapshot) => {
-            state.recording.isTalking = isTalking;
-          }),
-        );
-      },
-    });
+        },
+        onBlockCreated: ({ blockId, text, time, voiceStart, voiceEnd }) => {
+          this.store.setState((state) =>
+            produce(state, (draft) => {
+              const block: TRBlock = {
+                id: blockId,
+                time,
+                voiceStart,
+                voiceEnd,
+                text,
+                isActive: true,
+                type: TRBlockType.TALK,
+                userId: this.editorId,
+                voices: [],
+              };
+
+              draft.blocks[block.id] = block;
+            }),
+          );
+        },
+        onVoiceCreated: async ({ voiceId, file, blockId, ext }) => {
+          let url: string | false;
+          if (this.onAssetCreate) {
+            url = await this.onAssetCreate(this.app, file, voiceId);
+          } else {
+            url = await encodeFile(file);
+          }
+
+          if (url) {
+            this.store.setState((state) =>
+              produce(state, (draft) => {
+                const blockVoice: TRBlockVoice = {
+                  blockId,
+                  voiceId,
+                  ext,
+                  url: url as string,
+                };
+
+                draft.blocks[blockId]?.voices.push(blockVoice);
+              }),
+            );
+          } else {
+            console.log('Failed to get voice URL');
+          }
+        },
+        onTalking: (isTalking: boolean) => {
+          this.store.setState(
+            produce((state: TrawSnapshot) => {
+              state.recording.isTalking = isTalking;
+            }),
+          );
+        },
+      });
+    }
   }
 
   registerApp(app: TldrawApp) {
@@ -758,6 +760,8 @@ export class TrawApp {
   };
 
   startRecording = async (): Promise<void> => {
+    if (!this._trawRecorder) return;
+
     await this._trawRecorder.startRecording();
 
     this.store.setState(
@@ -769,13 +773,15 @@ export class TrawApp {
   };
 
   stopRecording = () => {
+    if (!this._trawRecorder) return;
+
+    this._trawRecorder?.stopRecording();
     this.store.setState(
       produce((state: TrawSnapshot) => {
         state.recording.isRecording = false;
         state.recording.startedAt = 0;
       }),
     );
-    this._trawRecorder.stopRecording();
   };
 
   private handleAssetCreate = async (app: TldrawApp, file: File, id: string): Promise<string | false> => {
