@@ -5,7 +5,7 @@ import BlockList from 'components/Panel/BlockList';
 import { useTrawApp } from 'hooks';
 
 export interface PanelProps {
-  handlePlayClick: () => void;
+  handlePlayClick: (blockId?: string) => void;
 }
 
 export const Panel = ({ handlePlayClick }: PanelProps) => {

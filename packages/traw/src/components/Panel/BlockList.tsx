@@ -4,7 +4,7 @@ import { TrawSnapshot } from 'types';
 import BlockItem from 'components/Panel/BlockItem';
 
 export interface BlockListProps {
-  handlePlayClick: () => void;
+  handlePlayClick: (blockId: string) => void;
 }
 
 export default function BlockList({ handlePlayClick }: BlockListProps) {
@@ -23,6 +23,7 @@ export default function BlockList({ handlePlayClick }: BlockListProps) {
             key={block.id}
             userName={'example user'}
             date={block.time}
+            blockId={block.id}
             blockText={block.text}
             isVoiceBlock={block.voices.length > 0}
             handlePlayClick={handlePlayClick}

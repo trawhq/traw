@@ -21,6 +21,8 @@ import { CreateRecordsEvent, EventTypeHandlerMap, TrawEventHandler, TrawEventTyp
 import create, { UseBoundStore } from 'zustand';
 import { TrawAppOptions } from './TrawAppOptions';
 import { TrawRecorder } from 'recorder/TrawRecorder';
+import { Howl } from 'howler';
+import { encodeFile } from 'utils/base64';
 
 export const convertCameraTRtoTD = (camera: TRCamera, viewport: TRViewport): TDCamera => {
   const ratio = viewport.width / viewport.height;
@@ -163,6 +165,7 @@ export class TrawApp {
                     blockId: 'example-1',
                     voiceId: 'example-1-1',
                     ext: 'mp4',
+                    url: '',
                   },
                 ],
                 voiceStart: 0,
@@ -180,6 +183,7 @@ export class TrawApp {
                     blockId: 'example-2',
                     voiceId: 'example-2-1',
                     ext: 'mp4',
+                    url: '',
                   },
                 ],
                 voiceStart: 0,
@@ -234,17 +238,29 @@ export class TrawApp {
         );
       },
       onVoiceCreated: async ({ voiceId, file, blockId, ext }) => {
-        this.store.setState((state) =>
-          produce(state, (draft) => {
-            const blockVoice: TRBlockVoice = {
-              blockId,
-              voiceId,
-              ext,
-            };
+        let url: string | false;
+        if (this.onAssetCreate) {
+          url = await this.onAssetCreate(this.app, file, voiceId);
+        } else {
+          url = await encodeFile(file);
+        }
 
-            draft.blocks[blockId]?.voices.push(blockVoice);
-          }),
-        );
+        if (url) {
+          this.store.setState((state) =>
+            produce(state, (draft) => {
+              const blockVoice: TRBlockVoice = {
+                blockId,
+                voiceId,
+                ext,
+                url: url as string,
+              };
+
+              draft.blocks[blockId]?.voices.push(blockVoice);
+            }),
+          );
+        } else {
+          console.log('Failed to get voice URL');
+        }
       },
       onTalking: (isTalking: boolean) => {
         this.store.setState(
@@ -742,13 +758,14 @@ export class TrawApp {
   };
 
   startRecording = async (): Promise<void> => {
+    await this._trawRecorder.startRecording();
+
     this.store.setState(
       produce((state: TrawSnapshot) => {
         state.recording.isRecording = true;
         state.recording.startedAt = Date.now();
       }),
     );
-    await this._trawRecorder.startRecording();
   };
 
   stopRecording = () => {
@@ -801,6 +818,21 @@ export class TrawApp {
       },
     });
   };
+
+  public playBlock(blockId: string) {
+    const block = this.store.getState().blocks[blockId || ''];
+    if (!block) return;
+    if (block.voices.length === 0) return;
+
+    const playableVoice = block.voices[0];
+    // TODO (Changje, 2022-12-24) - Reimplement it to support preloading
+    const howl = new Howl({
+      src: [playableVoice.url],
+      format: playableVoice.ext,
+    });
+    howl.seek(block.voiceStart / 1000);
+    howl.play();
+  }
 
   /*
    * Event handlers

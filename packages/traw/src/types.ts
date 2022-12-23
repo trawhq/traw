@@ -108,4 +108,5 @@ export type TRBlockVoice = {
   blockId: string;
   voiceId: string;
   ext: string;
+  url: string;
 };

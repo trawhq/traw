@@ -18,6 +18,12 @@ export type onVoiceCreatedHandler = (payload: {
 
 export interface TrawVoiceBlockGeneratorOptions {
   /**
+   * pull voiceStart time by the given value in milliseconds
+   * @default 500
+   */
+  voiceStartAdjustment?: number;
+
+  /**
    * Called when a creating block is edited (text is changed)
    */
   onCreatingBlockUpdated?: onCreatingBlockUpdatedHandler;
@@ -51,11 +57,17 @@ export class TrawVoiceBlockGenerator {
    */
   private _speakingStartedAt: number;
 
-  /*
+  /**
    * Text of the block being created. Reset to empty after creating a block.
    * @private
    */
   private _recognitions: SpeechRecognitionResult[];
+
+  /**
+   * pull voiceStart time by the given value in milliseconds
+   * @private
+   */
+  private _voiceStartAdjustment: number;
 
   /*
    * Public callbacks
@@ -64,7 +76,13 @@ export class TrawVoiceBlockGenerator {
   public onBlockCreated?: onBlockCreatedHandler;
   public onBlockVoiceCreated?: onVoiceCreatedHandler;
 
-  constructor({ onCreatingBlockUpdated, onBlockCreated, onVoiceCreated }: TrawVoiceBlockGeneratorOptions) {
+  constructor({
+    voiceStartAdjustment = 500,
+    onCreatingBlockUpdated,
+    onBlockCreated,
+    onVoiceCreated,
+  }: TrawVoiceBlockGeneratorOptions) {
+    this._voiceStartAdjustment = voiceStartAdjustment;
     this._blockIdsQueue = [];
     this._blockStartedAt = 0;
     this._speakingStartedAt = 0;
@@ -95,6 +113,10 @@ export class TrawVoiceBlockGenerator {
     this.onCreatingBlockUpdated?.(text);
   };
 
+  public readonly markBlockStartedAt = () => {
+    this._blockStartedAt = Date.now();
+  };
+
   public readonly onStartTalking = () => {
     if (this._speakingStartedAt === 0) {
       this._speakingStartedAt = Date.now();
@@ -108,7 +130,7 @@ export class TrawVoiceBlockGenerator {
       .map((r) => r.text.trim())
       .join(' ')
       .trim();
-    const voiceStart = Math.max(this._speakingStartedAt - this._blockStartedAt, 0);
+    const voiceStart = Math.max(this._speakingStartedAt - this._blockStartedAt - this._voiceStartAdjustment, 0);
     const voiceEnd = Date.now() - this._blockStartedAt;
 
     this.onBlockCreated?.({

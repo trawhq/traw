@@ -96,6 +96,7 @@ export class TrawRecorder {
 
     this._trawSpeechRecognizer.startRecognition();
     await this._mediaStreamManager.startMediaStream();
+    this._trawVoiceBlockGenerator.markBlockStartedAt();
     this._trawVoiceRecorder.startVoiceRecorder();
   };
 

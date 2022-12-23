@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { Header, Panel, Slide } from './components';
 import { TrawContext } from 'hooks';
 import './index.css';
@@ -44,6 +44,17 @@ const Traw = ({ app }: TrawProps) => {
     }
   }, [trawApp, isRecording]);
 
+  const handlePlayClick = useCallback(
+    (blockId?: string) => {
+      if (blockId) {
+        trawApp.playBlock(blockId);
+      } else {
+        // TODO - play the whole document
+      }
+    },
+    [trawApp],
+  );
+
   // Use the `key` to ensure that new selector hooks are made when the id changes
   return (
     <TrawContext.Provider value={trawApp}>
@@ -65,7 +76,7 @@ const Traw = ({ app }: TrawProps) => {
             <Slide />
           </div>
           <div className="flex basis-[269px] m-2 sm:ml-0  ">
-            <Panel handlePlayClick={() => null} />
+            <Panel handlePlayClick={handlePlayClick} />
           </div>
         </div>
       </div>
