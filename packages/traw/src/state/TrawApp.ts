@@ -135,6 +135,7 @@ export class TrawApp {
         isRecording: false,
         isTalking: false,
         recognizedText: '',
+        startedAt: 0,
       },
       camera: {
         [this.editorId]: {
@@ -714,6 +715,7 @@ export class TrawApp {
     this.store.setState(
       produce((state: TrawSnapshot) => {
         state.recording.isRecording = true;
+        state.recording.startedAt = Date.now();
       }),
     );
     await this._trawRecorder.startRecording();
@@ -723,6 +725,7 @@ export class TrawApp {
     this.store.setState(
       produce((state: TrawSnapshot) => {
         state.recording.isRecording = false;
+        state.recording.startedAt = 0;
       }),
     );
     this._trawRecorder.stopRecording();

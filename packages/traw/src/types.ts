@@ -59,6 +59,7 @@ export type TrawSnapshot = {
     isRecording: boolean;
     isTalking: boolean;
     recognizedText: string;
+    startedAt: number;
   };
   currentFollowTarget?: string;
   camera: {
