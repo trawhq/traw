@@ -4,13 +4,13 @@ import { nanoid } from 'nanoid';
 import {
   ActionType,
   TDCamera,
-  TRBlockType,
   TrawSnapshot,
   TRBlock,
+  TRBlockType,
+  TRBlockVoice,
   TRCamera,
   TRRecord,
   TRViewport,
-  TRBlockVoice,
 } from 'types';
 import createVanilla, { StoreApi } from 'zustand/vanilla';
 import { DEFAULT_CAMERA, SLIDE_HEIGHT, SLIDE_RATIO, SLIDE_WIDTH } from '../constants';
@@ -148,7 +148,45 @@ export class TrawApp {
       user,
       document,
       records: {},
-      blocks: {},
+      blocks:
+        process.env.NODE_ENV === 'development'
+          ? {
+              'example-1': {
+                id: 'example-1',
+                type: TRBlockType.TALK,
+                userId: 'example-1',
+                text: '동해물과 백두산이 마르고 닳도록 하느님이 보우하사 우리 나라 만세',
+                time: Date.now(),
+                isActive: true,
+                voices: [
+                  {
+                    blockId: 'example-1',
+                    voiceId: 'example-1-1',
+                    ext: 'mp4',
+                  },
+                ],
+                voiceStart: 0,
+                voiceEnd: 0,
+              },
+              'example-2': {
+                id: 'example-2',
+                type: TRBlockType.TALK,
+                userId: 'example-2',
+                text: '무궁화 삼천리 화려강산 대한 사람 대한으로 길이 보전하세',
+                time: Date.now() + 1000,
+                isActive: true,
+                voices: [
+                  {
+                    blockId: 'example-2',
+                    voiceId: 'example-2-1',
+                    ext: 'mp4',
+                  },
+                ],
+                voiceStart: 0,
+                voiceEnd: 0,
+              },
+            }
+          : {},
     };
     this.store = createVanilla<TrawSnapshot>(() => this._state);
     if (process.env.NODE_ENV === 'development') {
@@ -170,8 +208,6 @@ export class TrawApp {
     this._trawRecorder = new TrawRecorder({
       lang: 'ko-KR',
       onCreatingBlockUpdate: (text) => {
-        console.log('[TrawApp.trawRecorder] onCreatingBlockUpdate', text);
-
         this.store.setState(
           produce((state) => {
             state.recording.recognizedText = text;
@@ -179,8 +215,6 @@ export class TrawApp {
         );
       },
       onBlockCreated: ({ blockId, text, time, voiceStart, voiceEnd }) => {
-        console.log('[TrawApp.trawRecorder] onBlockCreated', blockId, text, time, voiceStart, voiceEnd);
-
         this.store.setState((state) =>
           produce(state, (draft) => {
             const block: TRBlock = {
@@ -200,8 +234,6 @@ export class TrawApp {
         );
       },
       onVoiceCreated: async ({ voiceId, file, blockId, ext }) => {
-        console.log('[TrawApp.trawRecorder] onVoiceCreated', voiceId, file, blockId, ext);
-
         this.store.setState((state) =>
           produce(state, (draft) => {
             const blockVoice: TRBlockVoice = {
@@ -215,8 +247,6 @@ export class TrawApp {
         );
       },
       onTalking: (isTalking: boolean) => {
-        console.log('[TrawApp.trawRecorder] onTalking', isTalking);
-
         this.store.setState(
           produce((state: TrawSnapshot) => {
             state.recording.isTalking = isTalking;
