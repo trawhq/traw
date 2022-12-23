@@ -188,14 +188,7 @@ export class TrawApp {
     const currentPageId = camera[this.editorId].targetSlideId;
     if (!currentPageId) return;
 
-    if (currentPageId === 'page') {
-      this.store.setState(
-        produce((state) => {
-          state.camera[this.editorId].targetSlideId = this.app.appState.currentPageId;
-        }),
-      );
-      return;
-    } else if (currentPageId !== this.app.appState.currentPageId) {
+    if (currentPageId !== this.app.appState.currentPageId) {
       this.app.patchState({
         appState: {
           currentPageId,
@@ -216,6 +209,7 @@ export class TrawApp {
   };
 
   handleCameraChange = (camera: TDCamera) => {
+    if (this.store.getState().viewport.width === 0) return;
     const trawCamera = convertCameraTDtoTR(camera, this.store.getState().viewport);
     const currentPageId = this.app.appState.currentPageId;
 
@@ -574,9 +568,37 @@ export class TrawApp {
           }
         }
       });
-    this.app.deletePage('page');
+
+    this.removeDefaultPage();
     if (isCameraChanged) {
       this.syncCamera();
+    }
+  };
+
+  private removeDefaultPage = () => {
+    if (this.app.document.pageStates.page && Object.keys(this.app.document.pageStates).length > 1) {
+      this.app.patchState({
+        appState: {
+          currentPageId: Object.keys(this.app.document.pageStates)[0],
+        },
+        document: {
+          pageStates: {
+            page: undefined,
+          },
+          pages: {
+            page: undefined,
+          },
+        },
+      });
+    }
+    if (this._state.camera[this.editorId].cameras.page) {
+      this.store.setState(
+        produce((state) => {
+          if (state.camera[this.editorId].targetSlideId === 'page')
+            state.camera[this.editorId].targetSlideId = Object.keys(this.app.document.pageStates)[0];
+          delete state.camera[this.editorId].cameras.page;
+        }),
+      );
     }
   };
 
