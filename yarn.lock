@@ -13929,10 +13929,10 @@ web-namespaces@^1.0.0:
   resolved "https://registry.yarnpkg.com/web-namespaces/-/web-namespaces-1.1.4.tgz#bc98a3de60dadd7faefc403d1076d529f5e030ec"
   integrity sha512-wYxSGajtmoP4WxfejAPIr4l0fVh+jeMXZb08wNc0tMg6xsfZXj3cECqIK0G7ZAqUq0PP8WlMDtaOGVBTAWztNw==
 
-webad-ts@^0.3.7:
-  version "0.3.7"
-  resolved "https://registry.yarnpkg.com/webad-ts/-/webad-ts-0.3.7.tgz#adda32fd459bc565714a5fc22ab5be37a4075cb6"
-  integrity sha512-go7UxMzkTHaWMovzIxS/OVxrsxG8uWG/NL+lvGFDWzrra+ZAfbG/fLVQD7/BTCJIIVfiOTstZtbNhvnrLUdMXw==
+webad-ts@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/webad-ts/-/webad-ts-1.0.0.tgz#37092a3d116dea04dd429b6b5bc577a39cc00475"
+  integrity sha512-6XuQTtzMBQkT1iPbwfRYVzF7c31d1PDHQVgNhnasV0xi1oT0Zl0aQtEMStmgEqGQL9S1lXYOiwLmEO+RhIBaZg==
 
 webidl-conversions@^3.0.0:
   version "3.0.1"
