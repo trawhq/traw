@@ -55,6 +55,11 @@ export type TrawSnapshot = {
   viewport: TRViewport;
   records: Record<string, TRRecord>;
   blocks: Record<string, TRBlock>;
+  recording: {
+    isRecording: boolean;
+    isTalking: boolean;
+    recognizedText: string;
+  };
   currentFollowTarget?: string;
   camera: {
     [userId: string]: {

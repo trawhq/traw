@@ -51,12 +51,10 @@ export class TrawSpeechRecognizer {
    * Starts speech recognition
    */
   public startRecognition = () => {
-    if (this._speechRecognition) {
-      this._speechRecognition.start();
-    } else {
+    if (!this._speechRecognition) {
       this._speechRecognition = this.initSpeechRecognition();
-      this._speechRecognition.start();
     }
+    this._speechRecognition.start();
   };
 
   /**

@@ -94,8 +94,8 @@ export class TrawRecorder {
       this._trawTalkingDetector.updateAudioContext(this._audioContext);
     }
 
-    await this._mediaStreamManager.startMediaStream();
     this._trawSpeechRecognizer.startRecognition();
+    await this._mediaStreamManager.startMediaStream();
     this._trawVoiceRecorder.startVoiceRecorder();
   };
 
@@ -103,6 +103,7 @@ export class TrawRecorder {
     this._trawVoiceRecorder.stopVoiceRecorder();
     this._trawSpeechRecognizer.stopRecognition();
     this._mediaStreamManager.stopMediaStream();
+    this._onTalking(false);
   };
 
   public mute = (): void => {

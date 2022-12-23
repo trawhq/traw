@@ -131,6 +131,11 @@ export class TrawApp {
         width: 0,
         height: 0,
       },
+      recording: {
+        isRecording: false,
+        isTalking: false,
+        recognizedText: '',
+      },
       camera: {
         [this.editorId]: {
           targetSlideId: 'page',
@@ -163,14 +168,20 @@ export class TrawApp {
 
     this._trawRecorder = new TrawRecorder({
       lang: 'ko-KR',
-      onCreatingBlockUpdate: (payload) => {
-        console.log('[TrawApp.trawRecorder] onCreatingBlockUpdate', payload);
+      onCreatingBlockUpdate: (text) => {
+        console.log('[TrawApp.trawRecorder] onCreatingBlockUpdate', text);
+
+        this.store.setState(
+          produce((state) => {
+            state.recording.recognizedText = text;
+          }),
+        );
       },
       onBlockCreated: ({ blockId, text, time, voiceStart, voiceEnd }) => {
         console.log('[TrawApp.trawRecorder] onBlockCreated', blockId, text, time, voiceStart, voiceEnd);
 
-        this.store.setState(
-          produce((state) => {
+        this.store.setState((state) =>
+          produce(state, (draft) => {
             const block: TRBlock = {
               id: blockId,
               time,
@@ -183,27 +194,33 @@ export class TrawApp {
               voices: [],
             };
 
-            state.blocks[block.id] = block;
+            draft.blocks[block.id] = block;
           }),
         );
       },
       onVoiceCreated: async ({ voiceId, file, blockId, ext }) => {
         console.log('[TrawApp.trawRecorder] onVoiceCreated', voiceId, file, blockId, ext);
 
-        this.store.setState(
-          produce((state) => {
+        this.store.setState((state) =>
+          produce(state, (draft) => {
             const blockVoice: TRBlockVoice = {
               blockId,
               voiceId,
               ext,
             };
 
-            state.blocks[blockId]?.voices.push(blockVoice);
+            draft.blocks[blockId]?.voices.push(blockVoice);
           }),
         );
       },
       onTalking: (isTalking: boolean) => {
         console.log('[TrawApp.trawRecorder] onTalking', isTalking);
+
+        this.store.setState(
+          produce((state: TrawSnapshot) => {
+            state.recording.isTalking = isTalking;
+          }),
+        );
       },
     });
   }
@@ -694,10 +711,20 @@ export class TrawApp {
   };
 
   startRecording = async (): Promise<void> => {
+    this.store.setState(
+      produce((state: TrawSnapshot) => {
+        state.recording.isRecording = true;
+      }),
+    );
     await this._trawRecorder.startRecording();
   };
 
   stopRecording = () => {
+    this.store.setState(
+      produce((state: TrawSnapshot) => {
+        state.recording.isRecording = false;
+      }),
+    );
     this._trawRecorder.stopRecording();
   };
 

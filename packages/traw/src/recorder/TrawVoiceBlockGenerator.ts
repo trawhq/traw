@@ -124,6 +124,8 @@ export class TrawVoiceBlockGenerator {
     this._blockStartedAt = Date.now();
     this._speakingStartedAt = 0;
     this._recognitions = [];
+
+    this.onCreatingBlockUpdated?.('');
   };
 
   public readonly createBlockVoice = (file: File, ext: string) => {
