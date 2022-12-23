@@ -37,20 +37,38 @@ export const Header = ({
         {Room}
         {isRecording ? (
           <button
-            className="bg-red-500 text-white rounded-full h-8 w-8 flex items-center justify-center"
+            className="bg-red-500 hover:bg-red-600 text-white rounded-full h-8 px-3 flex items-center justify-center gap-2"
             onClick={onClickStopRecording}
           >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path
-                d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 20C7.59 20 4 16.41 4 12C4 7.59 7.59 4 12 4C16.41 4 20 7.59 20 12C20 16.41 16.41 20 12 20Z"
-                fill="white"
-              />
-              <path d="M9 16V8H15V16H9ZM11 10H13V14H11V10Z" fill="white" />
+            <svg
+              className="text-red-500 hover:text-red-600"
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <circle cx="12" cy="12" r="12" fill="white" />
+              <rect x="7" y="7" width="10" height="10" fill="currentColor" />
             </svg>
+            Stop
           </button>
         ) : (
-          <button className="bg-red-500 text-white font-bold py-2 px-4 rounded-full" onClick={onClickStartRecording}>
-            {/* Record Icon */}
+          <button
+            className="bg-traw-purple hover:bg-indigo-600 text-white font-bold h-8 px-3 rounded-full flex items-center justify-center gap-2 transition-colors duration-150"
+            onClick={onClickStartRecording}
+          >
+            <svg
+              className="text-red-500 hover:text-red-700"
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <circle cx="12" cy="12" r="12" fill="white" />
+              <circle cx="12" cy="12" r="7" fill="currentColor" />
+            </svg>
             Record
           </button>
         )}

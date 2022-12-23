@@ -1,10 +1,10 @@
 import React from 'react';
 
-export interface CircularProgressProps {
+export interface CircularLoadingProps {
   color?: string;
 }
 
-export const CircularProgress = ({ color = 'traw-purple' }: CircularProgressProps) => {
+export const CircularLoading = ({ color = 'traw-purple' }: CircularLoadingProps) => {
   return (
     <svg className={`animate-spin h-5 w-5 bg-transparent text-${color}`} viewBox="0 0 24 24" fill="none">
       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
@@ -17,4 +17,4 @@ export const CircularProgress = ({ color = 'traw-purple' }: CircularProgressProp
   );
 };
 
-export default CircularProgress;
+export default CircularLoading;
