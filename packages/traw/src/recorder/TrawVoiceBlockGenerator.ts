@@ -96,15 +96,12 @@ export class TrawVoiceBlockGenerator {
   };
 
   public readonly onStartTalking = () => {
-    console.log('[TrawBlockGenerator] onStartTalking');
     if (this._speakingStartedAt === 0) {
       this._speakingStartedAt = Date.now();
     }
   };
 
   public readonly createBlock = () => {
-    console.log('[TrawBlockGenerator] createBlock');
-
     const blockId = nanoid();
     const time = this._speakingStartedAt;
     const text = this._recognitions

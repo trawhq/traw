@@ -92,7 +92,8 @@ export class TrawSpeechRecognizer {
     }
   };
 
-  private onError = () => {
+  private onError = (e: any) => {
+    console.log('[TrawSpeechRecognizer] onError', e);
     if (this._speechRecognition) {
       this.restartRecognition();
     }
