@@ -1,9 +1,7 @@
 import React, { useMemo } from 'react';
-import SvgPlayArrow from '../../icons/play-arrow';
-import SvgVolume from '../../icons/volume';
-import SvgVolumeOff from '../../icons/volume-off';
 import { UserAvatar } from '../Avatar/Avatar';
 import moment from 'moment';
+import classNames from 'classnames';
 
 export interface BlockItemProps {
   userName: string;
@@ -13,7 +11,7 @@ export interface BlockItemProps {
   handlePlayClick: () => void;
 }
 
-export const BlockItem = ({ userName, date, blockText, isVoiceBlock, handlePlayClick }: BlockItemProps) => {
+export const BlockItem = ({ userName, date, isVoiceBlock, blockText }: BlockItemProps) => {
   const dateStr = useMemo(() => {
     if (typeof date === 'string') {
       return date;
@@ -23,27 +21,22 @@ export const BlockItem = ({ userName, date, blockText, isVoiceBlock, handlePlayC
   }, [date]);
 
   return (
-    <li className="rounded-[10px] bg-white p-2 w-full border border-traw-grey-10 mb-2.5">
-      <div className="flex flex-1 flex-row items-center w-full grow">
+    <li className="bg-white w-full">
+      <div className="flex flex-1 flex-row items-center w-full grow gap-1">
         <div className="flex relative">
-          <UserAvatar avatarUrl={undefined} userName={userName} />
-          <div className="absolute flex items-center justify-center bottom-0 -right-[3px] w-[11px] h-[11px] rounded-full bg-white color-traw-grey">
-            {isVoiceBlock ? (
-              <SvgVolume className="fill-current w-2 h-2" />
-            ) : (
-              <SvgVolumeOff className="fill-current w-2 h-2" />
-            )}
-          </div>
+          <UserAvatar avatarUrl={undefined} userName={userName} size={15} />
         </div>
-        <div className="font-bold text-[13px] text-traw-grey-dark ml-2">{userName}</div>
-        <div className="text-traw-grey-100 text-[10px] ml-1">{dateStr}</div>
-        <div className="flex grow gap-1 justify-end">
-          <button className="rounded-full hover:bg-black/[.04] p-1 text-traw-grey-100" onClick={handlePlayClick}>
-            <SvgPlayArrow className="fill-current w-4 h-4" />
-          </button>
-        </div>
+        <div className="font-bold text-[13px] text-traw-grey-dark">{userName}</div>
+        <div className="text-traw-grey-100 text-[10px]">{dateStr}</div>
       </div>
-      <div className="mt-2 text-[13px] text-traw-gry py-1">{blockText}</div>
+      <span
+        className={classNames('mt-2', 'text-xs', 'rounded-md', 'py-1', 'px-0.5', 'transition-colors', {
+          'cursor-pointer': isVoiceBlock,
+          'hover:bg-traw-grey-50': isVoiceBlock,
+        })}
+      >
+        {blockText || '[Empty]'}
+      </span>
     </li>
   );
 };
