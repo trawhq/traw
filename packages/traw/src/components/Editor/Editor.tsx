@@ -117,26 +117,6 @@ export function Tldraw({
   disableAssets = false,
   darkMode = isSystemDarkMode,
   components,
-  onMount,
-  onChange,
-  onChangePresence,
-  onNewProject,
-  onSaveProject,
-  onSaveProjectAs,
-  onOpenProject,
-  onOpenMedia,
-  onUndo,
-  onRedo,
-  onPersist,
-  onPatch,
-  onCommand,
-  onChangePage,
-  onAssetCreate,
-  onAssetDelete,
-  onAssetUpload,
-  onSessionStart,
-  onSessionEnd,
-  onExport,
   hideCursors,
 }: TldrawProps) {
   const app = useTldrawApp();
@@ -180,54 +160,6 @@ export function Tldraw({
       app.toggleDarkMode();
     }
   }, [app, darkMode]);
-
-  // Update the app's callbacks when any callback changes.
-  React.useEffect(() => {
-    app.callbacks = {
-      onMount,
-      onChange,
-      onChangePresence,
-      onNewProject,
-      onSaveProject,
-      onSaveProjectAs,
-      onOpenProject,
-      onOpenMedia,
-      onUndo,
-      onRedo,
-      onPersist,
-      onPatch,
-      onCommand,
-      onChangePage,
-      onAssetDelete,
-      onAssetCreate,
-      onAssetUpload,
-      onExport,
-      onSessionStart,
-      onSessionEnd,
-    };
-  }, [
-    onMount,
-    onChange,
-    onChangePresence,
-    onNewProject,
-    onSaveProject,
-    onSaveProjectAs,
-    onOpenProject,
-    onOpenMedia,
-    onUndo,
-    onRedo,
-    onPersist,
-    onPatch,
-    onCommand,
-    onChangePage,
-    onAssetDelete,
-    onAssetCreate,
-    onAssetUpload,
-    onExport,
-    onSessionStart,
-    onSessionEnd,
-    app,
-  ]);
 
   React.useLayoutEffect(() => {
     if (typeof window === 'undefined') return;
