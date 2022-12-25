@@ -1,16 +1,22 @@
-import { AlignStyle } from '@tldraw/tldraw';
+import { AlignStyle, TDShapeType } from '@tldraw/tldraw';
 import * as React from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { useTrawApp } from './useTrawApp';
 
-export function useKeyboardShortcuts() {
+export function useKeyboardShortcuts(ref: React.RefObject<HTMLDivElement>) {
   const trawApp = useTrawApp();
   const app = trawApp.useTldrawApp();
 
-  // TODO (2022-12-10, Changje Jeong) - Use ignoreMenus
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const canHandleEvent = (ignoreMenus = false) => true;
-
+  const canHandleEvent = React.useCallback(
+    (ignoreMenus = false) => {
+      const elm = ref.current;
+      if (ignoreMenus && (app.isMenuOpen || app.settings.keepStyleMenuOpen)) return true;
+      elm?.focus();
+      return elm && (document.activeElement === elm || elm.contains(document.activeElement));
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [ref],
+  );
   React.useEffect(() => {
     if (!app) return;
 
@@ -46,108 +52,108 @@ export function useKeyboardShortcuts() {
       document.removeEventListener('copy', handleCopy);
       document.removeEventListener('paste', handlePaste);
     };
-  }, [app]);
+  }, [app, canHandleEvent]);
 
   /* ---------------------- Tools --------------------- */
 
-  // useHotkeys(
-  //   "v,1",
-  //   () => {
-  //     if (!canHandleEvent(true)) return;
-  //     app.selectTool("select");
-  //   },
-  //   [app]
-  // );
+  useHotkeys(
+    'v,1',
+    () => {
+      if (!canHandleEvent(true)) return;
+      app.selectTool('select');
+    },
+    [app],
+  );
 
-  // useHotkeys(
-  //   "d,p,2",
-  //   () => {
-  //     if (!canHandleEvent(true)) return;
-  //     app.selectTool(TDShapeType.Draw);
-  //   },
-  //   undefined,
-  //   [app]
-  // );
+  useHotkeys(
+    'd,p,2',
+    () => {
+      if (!canHandleEvent(true)) return;
+      app.selectTool(TDShapeType.Draw);
+    },
+    undefined,
+    [app],
+  );
 
-  // useHotkeys(
-  //   "e,3",
-  //   () => {
-  //     if (!canHandleEvent(true)) return;
-  //     app.selectTool("erase");
-  //   },
-  //   undefined,
-  //   [app]
-  // );
+  useHotkeys(
+    'e,3',
+    () => {
+      if (!canHandleEvent(true)) return;
+      app.selectTool('erase');
+    },
+    undefined,
+    [app],
+  );
 
-  // useHotkeys(
-  //   "r,4",
-  //   () => {
-  //     if (!canHandleEvent(true)) return;
-  //     app.selectTool(TDShapeType.Rectangle);
-  //   },
-  //   undefined,
-  //   [app]
-  // );
+  useHotkeys(
+    'r,4',
+    () => {
+      if (!canHandleEvent(true)) return;
+      app.selectTool(TDShapeType.Rectangle);
+    },
+    undefined,
+    [app],
+  );
 
-  // useHotkeys(
-  //   "o,5",
-  //   () => {
-  //     if (!canHandleEvent(true)) return;
-  //     app.selectTool(TDShapeType.Ellipse);
-  //   },
-  //   undefined,
-  //   [app]
-  // );
+  useHotkeys(
+    'o,5',
+    () => {
+      if (!canHandleEvent(true)) return;
+      app.selectTool(TDShapeType.Ellipse);
+    },
+    undefined,
+    [app],
+  );
 
-  // useHotkeys(
-  //   "g,6",
-  //   () => {
-  //     if (!canHandleEvent()) return;
-  //     app.selectTool(TDShapeType.Triangle);
-  //   },
-  //   undefined,
-  //   [app]
-  // );
+  useHotkeys(
+    'g,6',
+    () => {
+      if (!canHandleEvent()) return;
+      app.selectTool(TDShapeType.Triangle);
+    },
+    undefined,
+    [app],
+  );
 
-  // useHotkeys(
-  //   "l,7",
-  //   () => {
-  //     if (!canHandleEvent(true)) return;
-  //     app.selectTool(TDShapeType.Line);
-  //   },
-  //   undefined,
-  //   [app]
-  // );
+  useHotkeys(
+    'l,7',
+    () => {
+      if (!canHandleEvent(true)) return;
+      app.selectTool(TDShapeType.Line);
+    },
+    undefined,
+    [app],
+  );
 
-  // useHotkeys(
-  //   "a,8",
-  //   () => {
-  //     if (!canHandleEvent(true)) return;
-  //     app.selectTool(TDShapeType.Arrow);
-  //   },
-  //   undefined,
-  //   [app]
-  // );
+  useHotkeys(
+    'a,8',
+    () => {
+      if (!canHandleEvent(true)) return;
+      app.selectTool(TDShapeType.Arrow);
+    },
+    undefined,
+    [app],
+  );
 
-  // useHotkeys(
-  //   "t,9",
-  //   () => {
-  //     if (!canHandleEvent(true)) return;
-  //     app.selectTool(TDShapeType.Text);
-  //   },
-  //   undefined,
-  //   [app]
-  // );
+  useHotkeys(
+    't,9',
+    () => {
+      if (!canHandleEvent(true)) return;
+      app.selectTool(TDShapeType.Text);
+    },
+    undefined,
+    [app],
+  );
 
-  // useHotkeys(
-  //   "s,0",
-  //   () => {
-  //     if (!canHandleEvent(true)) return;
-  //     app.selectTool(TDShapeType.Sticky);
-  //   },
-  //   undefined,
-  //   [app]
-  // );
+  useHotkeys(
+    's,0',
+    () => {
+      if (!canHandleEvent(true)) return;
+      app.selectTool(TDShapeType.Sticky);
+    },
+    undefined,
+    [app],
+  );
 
   /* ---------------------- Misc ---------------------- */
 
