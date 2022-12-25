@@ -1,6 +1,7 @@
 import { shapeUtils, TDDocument, TDStatus, TLDR, TldrawApp } from '@tldraw/tldraw';
 import React, { useCallback, useEffect } from 'react';
 import { useKeyboardShortcuts, useTrawApp } from 'hooks';
+import { ToolsPanel } from 'components/ToolsPanel';
 
 import { CursorComponent, Renderer } from '@tldraw/core';
 import { ErrorBoundary as _Errorboundary } from 'react-error-boundary';
@@ -452,6 +453,9 @@ export const Editor = () => {
   return (
     <div id="traw-editor" className="flex-1 relative" ref={slideDomRef}>
       <Tldraw showMultiplayerMenu={false} darkMode={false} showMenu={false} showPages={false} />
+      <div>
+        <ToolsPanel />
+      </div>
     </div>
   );
 };
