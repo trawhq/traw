@@ -706,7 +706,6 @@ export class TrawApp {
 
   private removeDefaultPage = () => {
     if (this.app.document.pageStates.page && Object.keys(this.app.document.pageStates).length > 1) {
-      console.log(Object.keys(this.app.document.pageStates)[0]);
       this.app.patchState({
         appState: {
           currentPageId: Object.keys(this.app.document.pageStates).filter((p) => p !== 'page')[0],

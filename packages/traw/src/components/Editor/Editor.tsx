@@ -517,17 +517,9 @@ export const Editor = () => {
     };
   }, [handleResize]);
 
-  const handleMount = useCallback(
-    (tldraw: TldrawApp) => {
-      TrawApp.registerApp(tldraw);
-      handleResize();
-    },
-    [TrawApp, handleResize],
-  );
-
   return (
     <div id="traw-editor" className="flex-1 relative" ref={slideDomRef}>
-      <Tldraw onMount={handleMount} showMultiplayerMenu={false} darkMode={false} showMenu={false} showPages={false} />
+      <Tldraw showMultiplayerMenu={false} darkMode={false} showMenu={false} showPages={false} />
     </div>
   );
 };
