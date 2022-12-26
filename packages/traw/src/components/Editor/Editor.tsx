@@ -226,6 +226,7 @@ const InnerTldraw = React.memo(function InnerTldraw({ id, autofocus, components,
   const isSelecting = state.appState.activeTool === 'select';
 
   const page = document.pages[appState.currentPageId];
+  if (!page) return null;
   const pageState = document.pageStates[page.id];
   const assets = document.assets;
   const { selectedIds } = pageState;
@@ -240,40 +241,7 @@ const InnerTldraw = React.memo(function InnerTldraw({ id, autofocus, components,
     page.shapes[selectedIds[0]] &&
     TLDR.getShapeUtil(page.shapes[selectedIds[0]].type).hideResizeHandles;
 
-  // Custom rendering meta, with dark mode for shapes
-  const meta = React.useMemo(() => {
-    return { isDarkMode: settings.isDarkMode };
-  }, [settings.isDarkMode]);
-
   const showDashedBrush = settings.isCadSelectMode ? !appState.selectByContain : appState.selectByContain;
-
-  // Custom theme, based on darkmode
-  const theme = React.useMemo(() => {
-    const { selectByContain } = appState;
-    const { isDarkMode, isCadSelectMode } = settings;
-
-    if (isDarkMode) {
-      const brushBase = isCadSelectMode ? (selectByContain ? '69, 155, 255' : '105, 209, 73') : '180, 180, 180';
-      return {
-        brushFill: `rgba(${brushBase}, ${isCadSelectMode ? 0.08 : 0.05})`,
-        brushStroke: `rgba(${brushBase}, ${isCadSelectMode ? 0.5 : 0.25})`,
-        brushDashStroke: `rgba(${brushBase}, .6)`,
-        selected: 'rgba(38, 150, 255, 1.000)',
-        selectFill: 'rgba(38, 150, 255, 0.05)',
-        background: '#212529',
-        foreground: '#49555f',
-      };
-    }
-
-    const brushBase = isCadSelectMode ? (selectByContain ? '0, 89, 242' : '51, 163, 23') : '0,0,0';
-
-    return {
-      brushFill: `rgba(${brushBase}, ${isCadSelectMode ? 0.08 : 0.05})`,
-      brushStroke: `rgba(${brushBase}, ${isCadSelectMode ? 0.4 : 0.25})`,
-      brushDashStroke: `rgba(${brushBase}, .6)`,
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [settings.isDarkMode, settings.isCadSelectMode, appState.selectByContain]);
 
   const isInSession = app.session !== undefined;
 
@@ -298,7 +266,7 @@ const InnerTldraw = React.memo(function InnerTldraw({ id, autofocus, components,
       {/* <Loading /> */}
       <OneOff focusableRef={rWrapper} autofocus={autofocus} />
       {/* <ContextMenu> */}
-      <ErrorBoundary FallbackComponent={<div>Error!</div>}>
+      <ErrorBoundary FallbackComponent={() => <div>Error!</div>}>
         <Renderer
           id={id}
           containerRef={rWrapper}
@@ -310,8 +278,7 @@ const InnerTldraw = React.memo(function InnerTldraw({ id, autofocus, components,
           eraseLine={appState.eraseLine}
           users={room?.users}
           userId={room?.userId}
-          theme={theme}
-          meta={meta}
+          meta={{ isDarkMode: false }}
           components={components}
           hideCursors={hideCursors}
           hideBounds={hideBounds}

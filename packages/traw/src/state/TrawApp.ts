@@ -386,6 +386,7 @@ export class TrawApp {
   };
 
   handleCameraRecord = debounce((camera: TRCamera) => {
+    const document = this.store.getState().document;
     const currentPageId = this.app.appState.currentPageId;
     // create record
     const record: TRRecord = {
@@ -398,7 +399,7 @@ export class TrawApp {
       data: {
         camera,
       },
-      origin: '',
+      origin: document.id,
     };
 
     const createRecordsEvent: CreateRecordsEvent = {
@@ -411,6 +412,7 @@ export class TrawApp {
         state.records[record.id] = record;
       }),
     );
+    this._actionStartTime = 0;
   }, 400);
 
   selectTool(tool: TDToolType) {
@@ -929,7 +931,6 @@ export class TrawApp {
           .sort((a, b) => a.start - b.start)
           .filter((r) => r.start <= currentTime);
         const afterPointer = records.length;
-        console.log(afterPointer);
         this.applyRecords(records.slice(this.pointer + 1));
         this.pointer = afterPointer - 1;
 
