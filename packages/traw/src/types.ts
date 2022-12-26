@@ -60,7 +60,7 @@ export enum PlayModeType {
 }
 
 export type TrawSnapshot = {
-  appState: {
+  player: {
     mode: PlayModeType;
     targetBlockId?: string;
     start: number;

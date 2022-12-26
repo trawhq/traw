@@ -131,7 +131,7 @@ export class TrawApp {
     this.editorId = user.id;
 
     this._state = {
-      appState: {
+      player: {
         mode: PlayModeType.EDIT,
         isLimit: true,
         start: 0,
@@ -863,7 +863,53 @@ export class TrawApp {
     });
     howl.seek(block.voiceStart / 1000);
     howl.play();
+
+    this.store.setState(
+      produce((state) => {
+        state.player = {
+          ...state.player,
+          targetBlockId: blockId,
+          mode: PlayModeType.PLAYING,
+          end: Date.now() + (block.voiceEnd - block.voiceStart),
+        };
+      }),
+    );
+    this._handlePlay();
   }
+
+  private playInterval: number | undefined;
+
+  private stopPlay = () => {
+    if (this.playInterval) cancelAnimationFrame(this.playInterval);
+
+    this.store.setState(
+      produce((state) => {
+        state.player = {
+          mode: PlayModeType.EDIT,
+          isLimit: true,
+          start: 0,
+          end: Infinity,
+          current: 0,
+          volume: 1,
+          loop: false,
+        };
+      }),
+    );
+  };
+
+  private _handlePlay = () => {
+    const { player } = this.store.getState();
+    if (player.mode !== PlayModeType.PLAYING) {
+      if (this.playInterval) cancelAnimationFrame(this.playInterval);
+      return;
+    } else {
+      if (Date.now() > player.end) {
+        this.stopPlay();
+        return;
+      }
+      this.playInterval = requestAnimationFrame(this._handlePlay);
+    }
+  };
 
   /*
    * Event handlers
