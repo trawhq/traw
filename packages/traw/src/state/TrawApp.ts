@@ -98,6 +98,8 @@ export class TrawApp {
    */
   private _state: TrawSnapshot;
 
+  protected pointer = -1;
+
   /**
    * Event handlers
    * @private
@@ -710,6 +712,7 @@ export class TrawApp {
       });
 
     this.removeDefaultPage();
+    this.pointer += records.length;
     if (isCameraChanged) {
       this.syncCamera();
     }
@@ -717,10 +720,14 @@ export class TrawApp {
 
   private removeDefaultPage = () => {
     if (this.app.document.pageStates.page && Object.keys(this.app.document.pageStates).length > 1) {
+      if (this.app.state.appState.currentPageId === 'page') {
+        this.app.patchState({
+          appState: {
+            currentPageId: Object.keys(this.app.document.pageStates).filter((p) => p !== 'page')[0],
+          },
+        });
+      }
       this.app.patchState({
-        appState: {
-          currentPageId: Object.keys(this.app.document.pageStates).filter((p) => p !== 'page')[0],
-        },
         document: {
           pageStates: {
             page: undefined,
@@ -856,6 +863,9 @@ export class TrawApp {
 
     const playableVoice = this.getPlayableVoice(block);
     if (!playableVoice) return;
+
+    this.app.resetDocument();
+    this.pointer = -1;
     // TODO (Changje, 2022-12-24) - Reimplement it to support preloading
     const howl = new Howl({
       src: [playableVoice.url],
@@ -870,6 +880,7 @@ export class TrawApp {
           ...state.player,
           targetBlockId: blockId,
           mode: PlayModeType.PLAYING,
+          start: Date.now(),
           end: Date.now() + (block.voiceEnd - block.voiceStart),
         };
       }),
@@ -895,6 +906,8 @@ export class TrawApp {
         };
       }),
     );
+
+    this.applyRecordsFromFirst();
   };
 
   private _handlePlay = () => {
@@ -906,8 +919,22 @@ export class TrawApp {
       if (Date.now() > player.end) {
         this.stopPlay();
         return;
+      } else {
+        // update to current time
+        const fromBlockStart = Date.now() - player.start;
+        const targetBlock = this.store.getState().blocks[player.targetBlockId || ''];
+        if (!targetBlock) return;
+        const currentTime = targetBlock.time + fromBlockStart;
+        const records = Object.values(this.store.getState().records)
+          .sort((a, b) => a.start - b.start)
+          .filter((r) => r.start <= currentTime);
+        const afterPointer = records.length;
+        console.log(afterPointer);
+        this.applyRecords(records.slice(this.pointer + 1));
+        this.pointer = afterPointer - 1;
+
+        this.playInterval = requestAnimationFrame(this._handlePlay);
       }
-      this.playInterval = requestAnimationFrame(this._handlePlay);
     }
   };
 
