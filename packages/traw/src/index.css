@@ -10,7 +10,6 @@
   --harvey-blue: #070bce;
 
   --heading-font-size: 40px;
-
 }
 
 @font-face {
@@ -31,13 +30,11 @@
   src: url('static/fonts/nanum-square/NanumSquareR.ttf') format('truetype');
 }
 
-
 @font-face {
   font-family: 'NanumSquare';
   font-weight: 700;
   src: url('static/fonts/nanum-square/NanumSquareB.ttf') format('truetype');
 }
-
 
 @media (prefers-color-scheme: dark) {
   :root {
@@ -52,9 +49,8 @@
 
 @layer components {
   .btn-grey {
-    @apply py-1 px-1 bg-white text-traw-grey-100  hover:bg-black/[.04] focus:outline-none ;
+    @apply py-1 px-1 bg-white text-traw-grey-100  hover:bg-black/[.04] focus:outline-none;
   }
-  
 }
 @layer base {
   html {

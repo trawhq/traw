@@ -8,6 +8,7 @@ import { CursorComponent, Renderer } from '@tldraw/core';
 import { TDCallbacks } from '@tldraw/tldraw/dist/state';
 import { useTldrawApp } from 'hooks/useTldrawApp';
 import { ErrorBoundary as _Errorboundary } from 'react-error-boundary';
+import { PlayModeType } from 'types';
 
 const ErrorBoundary = _Errorboundary as any;
 
@@ -216,6 +217,9 @@ interface InnerTldrawProps {
 }
 
 const InnerTldraw = React.memo(function InnerTldraw({ id, autofocus, components, hideCursors }: InnerTldrawProps) {
+  const trawApp = useTrawApp();
+  const { mode } = trawApp.useStore().player;
+  const isPlay = mode === PlayModeType.PLAYING;
   const app = useTldrawApp();
   const rWrapper = React.useRef<HTMLDivElement>(null);
 
@@ -261,7 +265,7 @@ const InnerTldraw = React.memo(function InnerTldraw({ id, autofocus, components,
   const hideCloneHandles = isInSession || !isSelecting || pageState.camera.zoom < 0.2;
 
   return (
-    <StyledLayout ref={rWrapper} tabIndex={-0}>
+    <StyledLayout ref={rWrapper} tabIndex={-0} playMode={isPlay ? 'isPlay' : 'isNotPlay'}>
       {/* <AlertDialog container={dialogContainer} /> */}
       {/* <Loading /> */}
       <OneOff focusableRef={rWrapper} autofocus={autofocus} />
@@ -368,6 +372,21 @@ const StyledLayout = styled('div', {
     height: '100%',
     width: '100%',
     zIndex: 1,
+  },
+
+  variants: {
+    playMode: {
+      isPlay: {
+        '& .tl-layer': {
+          transition: 'all 0.5s ease-out',
+        },
+      },
+      isNotPlay: {
+        '& .tl-layer': {
+          transition: 'none',
+        },
+      },
+    },
   },
 
   '& input, textarea, button, select, label, button': {
