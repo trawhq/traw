@@ -74,12 +74,23 @@ export const convertCameraTDtoTR = (camera: TDCamera, viewport: TRViewport): TRC
   }
 };
 
+export class TrawDrawApp extends TldrawApp {
+  /**
+   * Move backward in the undo/redo stack.
+   */
+  getStack = () => {
+    return {
+      stack: this.stack,
+      pointer: this.pointer,
+    };
+  };
+}
 export class TrawApp {
   /**
    * The Tldraw app. (https://tldraw.com)
    * This is used to create and edit slides.
    */
-  app: TldrawApp;
+  app: TrawDrawApp;
 
   editorId: string;
 
@@ -217,7 +228,7 @@ export class TrawApp {
 
     this.useStore = create(this.store);
 
-    this.app = new TldrawApp();
+    this.app = new TrawDrawApp();
 
     this.registerApp(this.app);
 
@@ -288,18 +299,52 @@ export class TrawApp {
     }
   }
 
-  registerApp(app: TldrawApp) {
+  registerApp(app: TrawDrawApp) {
     app.callbacks = {
       onCommand: this.recordCommand,
       onAssetCreate: this.handleAssetCreate,
       onPatch: this.onPatch,
       onChangePresence: this.onChangePresence,
+      onUndo: this.handleUndo,
+      onRedo: this.handleRedo,
     };
 
     this.app = app;
     this.applyRecordsFromFirst();
     this.emit(TrawEventType.TldrawAppChange, { tldrawApp: app });
   }
+
+  private _isDelete = (patch: TldrawPatch) => {
+    const shapes = patch.document?.pages?.['page']?.shapes;
+    if (!shapes) return false;
+    return shapes[Object.keys(shapes)[0]] === undefined;
+  };
+
+  private handleUndo = (app: TldrawApp) => {
+    const trawDrawApp = app as TrawDrawApp;
+    const { stack, pointer } = trawDrawApp.getStack();
+    const command = stack[pointer + 1];
+    if (!command) return;
+    const isDelete = this._isDelete(command.before);
+    this.recordCommand(app, {
+      id: isDelete ? 'delete' : 'edit',
+      before: command.after,
+      after: command.before,
+    });
+  };
+
+  private handleRedo = (app: TldrawApp) => {
+    const trawDrawApp = app as TrawDrawApp;
+    const { stack, pointer } = trawDrawApp.getStack();
+    const command = stack[pointer];
+    if (!command) return;
+    const isDelete = this._isDelete(command.after);
+    this.recordCommand(app, {
+      id: isDelete ? 'delete' : 'edit',
+      before: command.before,
+      after: command.after,
+    });
+  };
 
   private onPatch = (app: TldrawApp, patch: TldrawPatch, reason?: string) => {
     if (reason === 'sync_camera') return;

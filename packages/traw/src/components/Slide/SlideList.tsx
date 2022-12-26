@@ -3,7 +3,7 @@ import React, { useEffect, useRef } from 'react';
 import { useTrawApp } from '../../hooks/useTrawApp';
 import SvgAdd from '../../icons/add';
 import SvgGridView from '../../icons/grid-view';
-import SlideListItem, { SlideListItemState } from './SlideListItem';
+import SlideListItem, { SlideListItemState } from '../SlideListPanel/SlideListItem';
 
 export interface SlideListProps {
   canAddSlide: boolean;

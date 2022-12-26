@@ -1,5 +1,4 @@
 import { shapeUtils, TDDocument, TDStatus, TLDR } from '@tldraw/tldraw';
-import { ToolsPanel } from 'components/ToolsPanel';
 import { useKeyboardShortcuts, useTrawApp } from 'hooks';
 import React, { useCallback, useEffect } from 'react';
 
@@ -348,6 +347,7 @@ const InnerTldraw = React.memo(function InnerTldraw({ id, autofocus, components,
           onDrop={app.onDrop}
         />
       </ErrorBoundary>
+
       {/* </ContextMenu> */}
     </StyledLayout>
   );
@@ -372,6 +372,7 @@ const StyledLayout = styled('div', {
     height: '100%',
     width: '100%',
     zIndex: 1,
+    backgroundColor: '$canvas',
   },
 
   variants: {
@@ -437,10 +438,9 @@ export const Editor = () => {
   }, [handleResize]);
 
   return (
-    <div id="traw-editor" className="flex-1 relative" ref={slideDomRef}>
-      <Tldraw showMultiplayerMenu={false} darkMode={false} showMenu={false} showPages={false} />
-      <div>
-        <ToolsPanel />
+    <div id="traw-editor" className="relative w-full h-full" ref={slideDomRef}>
+      <div className="absolute left-0 right-0 top-0 bottom-0 w-full h-full">
+        <Tldraw showMultiplayerMenu={false} darkMode={false} showMenu={false} showPages={false} />
       </div>
     </div>
   );

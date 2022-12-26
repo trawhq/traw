@@ -1,9 +1,12 @@
-import React, { useCallback, useEffect } from 'react';
-import { Header, Panel, Slide } from './components';
+import { SlideListPanel } from 'components/SlideListPanel';
+import { ToolsPanel } from 'components/ToolsPanel';
 import { TrawContext } from 'hooks';
-import './index.css';
+import React, { useCallback, useEffect } from 'react';
 import { TrawApp } from 'state';
+import { styled } from 'stitches.config';
 import { TEST_DOCUMENT_1, TEST_USER_1 } from 'utils/testUtil';
+import { Header, Panel, Slide } from './components';
+import './index.css';
 
 export interface TrawProps {
   app?: TrawApp;
@@ -58,30 +61,47 @@ const Traw = ({ app }: TrawProps) => {
   // Use the `key` to ensure that new selector hooks are made when the id changes
   return (
     <TrawContext.Provider value={trawApp}>
-      <div id="traw" data-testid="traw" className="flex flex-1 flex-col overflow-hidden bg-traw-sky">
-        <div className="h-14 m-2 mb-0">
-          <Header
-            title={'Test Document'}
-            canEdit={true}
-            handleChangeTitle={() => null}
-            Room={<div />}
-            isRecording={isRecording}
-            onClickStartRecording={startRecording}
-            onClickStopRecording={stopRecording}
-          />
-        </div>
-
-        <div className="flex flex-1 flex-col sm:flex-row">
-          <div className="flex flex-1 ">
-            <Slide />
+      <div id="traw" data-testid="traw" className="flex flex-1 flex-col overflow-hidden ">
+        <Slide />
+        <StyledUI>
+          <div className="absolute w-full">
+            <Header
+              title={'Test Document'}
+              canEdit={true}
+              handleChangeTitle={() => null}
+              Room={<div />}
+              isRecording={isRecording}
+              onClickStartRecording={startRecording}
+              onClickStopRecording={stopRecording}
+            />
           </div>
-          <div className="flex basis-[269px] m-2 sm:ml-0  ">
-            <Panel handlePlayClick={handlePlayClick} />
+          <Panel handlePlayClick={handlePlayClick} />
+          <div className="mt-[56px] w-auto h-full relative">
+            <SlideListPanel />
           </div>
-        </div>
+          <ToolsPanel />
+        </StyledUI>
       </div>
     </TrawContext.Provider>
   );
 };
 
 export { Traw };
+
+const StyledUI = styled('div', {
+  position: 'absolute',
+  overflow: 'hidden',
+  top: 0,
+  left: 0,
+  height: '100%',
+  width: '100%',
+  padding: '8px 8px 0 8px',
+  display: 'flex',
+  alignItems: 'flex-start',
+  justifyContent: 'flex-start',
+  pointerEvents: 'none',
+  zIndex: 2,
+  '& > *': {
+    pointerEvents: 'all',
+  },
+});

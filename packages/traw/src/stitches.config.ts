@@ -16,10 +16,11 @@ const { styled, createTheme } = createStitches({
       selected: 'rgba(114, 110, 246, 0.3)',
       selectedContrast: '#fefefe',
       text: '#5B5F80',
+      textPrimary: '#2B2B59',
       tooltip: '#1d1d1d',
       tooltipContrast: '#ffffff',
       warn: 'rgba(255, 100, 100, 1)',
-      canvas: 'rgb(248, 249, 250)',
+      canvas: '#edeff7',
     },
     shadows: {
       2: '0px 1px 1px rgba(0, 0, 0, 0.14)',

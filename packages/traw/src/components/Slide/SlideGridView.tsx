@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import { TDPage } from '@tldraw/tldraw';
-import SlideListItem, { SlideListItemState } from './SlideListItem';
+import SlideListItem, { SlideListItemState } from '../SlideListPanel/SlideListItem';
 
 interface SlideGridViewProps {
   close: () => void;

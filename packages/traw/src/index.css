@@ -57,3 +57,7 @@
     font-family: 'Lexend', 'NanumSquare', 'sans-serif', system-ui, sans-serif;
   }
 }
+
+::-webkit-scrollbar {
+  display: none;
+}

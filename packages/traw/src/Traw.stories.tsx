@@ -62,7 +62,7 @@ const SyncTemplate: ComponentStory<typeof Traw> = () => {
   });
 
   return (
-    <div className="h-screen flex -m-4">
+    <div className="h-screen flex -m-4 gap-2">
       <Traw app={trawAppLeft} />
       <Traw app={trawAppRight} />
     </div>
