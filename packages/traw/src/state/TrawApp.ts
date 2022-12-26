@@ -132,6 +132,11 @@ export class TrawApp {
   constructor({ user, document, records = [] }: TrawAppOptions) {
     this.editorId = user.id;
 
+    const recordMap: Record<string, TRRecord> = {};
+    records.forEach((record) => {
+      recordMap[record.id] = record;
+    });
+
     this._state = {
       player: {
         mode: PlayModeType.EDIT,
@@ -162,7 +167,7 @@ export class TrawApp {
       },
       user,
       document,
-      records: {},
+      records: recordMap,
       blocks:
         process.env.NODE_ENV === 'development'
           ? {
@@ -216,10 +221,6 @@ export class TrawApp {
 
     this.registerApp(this.app);
 
-    const recordMap: Record<string, TRRecord> = {};
-    records.forEach((record) => {
-      recordMap[record.id] = record;
-    });
     this.applyRecordsFromFirst();
 
     if (TrawRecorder.isSupported()) {

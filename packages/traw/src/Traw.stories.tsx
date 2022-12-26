@@ -3,7 +3,7 @@ import { default as React, useEffect } from 'react';
 import { TrawApp, TrawEventType } from 'state';
 
 import { Traw } from 'Traw';
-import { TEST_DOCUMENT_1, TEST_USER_1, TEST_USER_2 } from 'utils/testUtil';
+import { EXAMPLE_RECORDS, TEST_DOCUMENT_1, TEST_USER_1, TEST_USER_2 } from 'utils/testUtil';
 
 export default {
   title: 'Traw/Traw',
@@ -13,9 +13,17 @@ export default {
 } as ComponentMeta<typeof Traw>;
 
 const Template: ComponentStory<typeof Traw> = () => {
+  const [trawApp] = React.useState(
+    new TrawApp({
+      user: TEST_USER_1,
+      document: TEST_DOCUMENT_1,
+      records: EXAMPLE_RECORDS,
+    }),
+  );
+
   return (
     <div className="h-screen flex -m-4">
-      <Traw />
+      <Traw app={trawApp} />
     </div>
   );
 };
