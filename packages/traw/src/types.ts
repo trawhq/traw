@@ -51,7 +51,26 @@ export type TRCamera = {
   zoom: number;
 };
 
+export enum PlayModeType {
+  EDIT = 'EDIT',
+  PREPARE = 'PREPARE',
+  PLAYING = 'PLAYING',
+  PAUSE = 'PAUSE',
+  STOP = 'STOP',
+}
+
 export type TrawSnapshot = {
+  appState: {
+    mode: PlayModeType;
+    targetBlockId?: string;
+    start: number;
+    end: number;
+    current: number;
+    playAs?: string;
+    isLimit: boolean;
+    loop: boolean;
+    volume: number;
+  };
   viewport: TRViewport;
   records: Record<string, TRRecord>;
   blocks: Record<string, TRBlock>;

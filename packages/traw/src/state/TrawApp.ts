@@ -3,6 +3,7 @@ import debounce from 'lodash/debounce';
 import { nanoid } from 'nanoid';
 import {
   ActionType,
+  PlayModeType,
   TDCamera,
   TrawSnapshot,
   TRBlock,
@@ -23,6 +24,7 @@ import { TrawAppOptions } from './TrawAppOptions';
 import { TrawRecorder } from 'recorder/TrawRecorder';
 import { Howl } from 'howler';
 import { encodeFile } from 'utils/base64';
+import { isChrome } from 'utils/common';
 
 export const convertCameraTRtoTD = (camera: TRCamera, viewport: TRViewport): TDCamera => {
   const ratio = viewport.width / viewport.height;
@@ -129,6 +131,15 @@ export class TrawApp {
     this.editorId = user.id;
 
     this._state = {
+      appState: {
+        mode: PlayModeType.EDIT,
+        isLimit: true,
+        start: 0,
+        end: Infinity,
+        current: 0,
+        volume: 1,
+        loop: false,
+      },
       viewport: {
         width: 0,
         height: 0,
@@ -825,12 +836,26 @@ export class TrawApp {
     });
   };
 
+  private getPlayableVoice = (block: TRBlock | undefined): TRBlockVoice | undefined => {
+    if (!block || block.voices.length === 0) return undefined;
+
+    const webmVoice = block.voices.find(({ ext }) => ext === 'webm');
+    const mp4Voice = block.voices.find(({ ext }) => ext === 'mp4');
+
+    if (isChrome()) {
+      return webmVoice ?? mp4Voice;
+    } else {
+      return mp4Voice;
+    }
+  };
+
   public playBlock(blockId: string) {
     const block = this.store.getState().blocks[blockId || ''];
     if (!block) return;
     if (block.voices.length === 0) return;
 
-    const playableVoice = block.voices[0];
+    const playableVoice = this.getPlayableVoice(block);
+    if (!playableVoice) return;
     // TODO (Changje, 2022-12-24) - Reimplement it to support preloading
     const howl = new Howl({
       src: [playableVoice.url],
