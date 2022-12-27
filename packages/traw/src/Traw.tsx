@@ -51,7 +51,6 @@ const Traw = ({ app, document, components }: TrawProps) => {
 
   const [isRecording, setIsRecording] = React.useState(false);
   const startRecording = () => setIsRecording(true);
-  const stopRecording = () => setIsRecording(false);
 
   useEffect(() => {
     if (isRecording) {
@@ -80,11 +79,7 @@ const Traw = ({ app, document, components }: TrawProps) => {
         <StyledUI>
           <HeaderPanel />
           <TopPanel Room={components?.TopMenu || <div />} />
-          <BlockPanel
-            handlePlayClick={handlePlayClick}
-            onClickStartRecording={startRecording}
-            onClickStopRecording={stopRecording}
-          />
+          <BlockPanel handlePlayClick={handlePlayClick} onClickStartRecording={startRecording} />
 
           <SlideListPanel />
           <ToolsPanel />

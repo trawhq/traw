@@ -6,5 +6,7 @@
     "baseUrl": "src",
     "declaration": true,
     "declarationDir": "build",
+    "resolveJsonModule": true,
+    "esModuleInterop": true
   }
 }

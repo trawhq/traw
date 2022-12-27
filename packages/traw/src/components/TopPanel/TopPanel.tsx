@@ -4,7 +4,6 @@ import { styled } from 'stitches.config';
 import { breakpoints } from 'utils/breakpoints';
 
 export interface TopPanelProps {
-  // Room
   Room: ReactNode;
 }
 

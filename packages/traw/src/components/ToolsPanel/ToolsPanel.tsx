@@ -6,6 +6,7 @@ import * as React from 'react';
 import { breakpoints } from 'utils/breakpoints';
 import { PrimaryTools } from './PrimaryTools';
 import { StatusBar } from './StatusBar';
+import { StyleMenu } from './StyleMenu';
 
 const isDebugModeSelector = (s: TDSnapshot) => s.settings.isDebugMode;
 const dockPositionState = (s: TDSnapshot) => s.settings.dockPosition;
@@ -25,6 +26,7 @@ export const ToolsPanel = React.memo(function ToolsPanel({ onBlur }: ToolsPanelP
         <StyledCenterWrap id="TD-Tools">
           <StyledPrimaryTools orientation={side === 'bottom' || side === 'top' ? 'horizontal' : 'vertical'}>
             <PrimaryTools />
+            <StyleMenu />
           </StyledPrimaryTools>
         </StyledCenterWrap>
       </StyledToolsPanelContainer>

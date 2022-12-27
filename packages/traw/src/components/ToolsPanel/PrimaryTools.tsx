@@ -150,11 +150,11 @@ export const PrimaryTools = React.memo(function PrimaryTools() {
 });
 
 const StyledPanel = styled(Panel, {
-  borderRadius: '20px',
+  borderRadius: '9999px',
   variants: {
     bp: {
       small: {
-        padding: '$2 $5',
+        padding: '$1 $4',
       },
     },
   },

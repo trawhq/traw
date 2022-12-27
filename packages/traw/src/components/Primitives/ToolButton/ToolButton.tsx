@@ -106,7 +106,6 @@ export const StyledToolButtonInner = styled('div', {
   color: 'inherit',
   userSelect: 'none',
   boxSizing: 'border-box',
-  border: '1px solid transparent',
   '-webkit-tap-highlight-color': 'transparent',
   'tap-highlight-color': 'transparent',
 });
@@ -126,7 +125,7 @@ export const StyledToolButton = styled('button', {
   pointerEvents: 'all',
   height: '27px',
   width: '27px',
-  border: '1px solid $panel',
+  border: '1px solid transparent',
   '-webkit-tap-highlight-color': 'transparent',
   'tap-highlight-color': 'transparent',
 
@@ -137,7 +136,14 @@ export const StyledToolButton = styled('button', {
   variants: {
     variant: {
       primary: {
+        width: 30,
+        height: 30,
         marginTop: '0',
+        [`& ${StyledToolButtonInner} > svg`]: {
+          color: '#5B5F80',
+          width: 15,
+          height: 15,
+        },
       },
       icon: {
         [`& ${StyledToolButtonInner}`]: {
@@ -150,9 +156,11 @@ export const StyledToolButton = styled('button', {
       },
       text: {
         width: 'auto',
+        height: '38px',
         [`& ${StyledToolButtonInner}`]: {
-          fontSize: '$1',
-          padding: '0 $3',
+          fontSize: '$2',
+          color: '$text',
+          padding: '0 15px',
           gap: '$3',
         },
       },
@@ -172,6 +180,9 @@ export const StyledToolButton = styled('button', {
         },
       },
       undo: {
+        width: 30,
+        height: 30,
+        marginTop: 0,
         [`& ${StyledToolButtonInner} > svg`]: {
           width: 20,
           height: 20,
@@ -191,32 +202,6 @@ export const StyledToolButton = styled('button', {
     },
   },
   compoundVariants: [
-    {
-      variant: 'primary',
-      bp: 'mobile',
-      css: {
-        height: 27,
-        width: 27,
-        [`& ${StyledToolButtonInner} > svg`]: {
-          width: 13,
-          height: 13,
-          color: '#5B5F80',
-        },
-      },
-    },
-    {
-      variant: 'primary',
-      bp: 'small',
-      css: {
-        height: '27px',
-        width: '27px',
-        [`& ${StyledToolButtonInner} > svg`]: {
-          width: 13,
-          height: 13,
-          color: '#5B5F80',
-        },
-      },
-    },
     {
       isActive: true,
       css: {
