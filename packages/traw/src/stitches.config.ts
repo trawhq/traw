@@ -94,6 +94,7 @@ const { styled, createTheme } = createStitches({
       };
     },
   },
+  prefix: 'traw',
 });
 
 export const dark = createTheme({

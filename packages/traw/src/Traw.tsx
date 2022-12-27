@@ -1,3 +1,4 @@
+import { Editor } from 'components/Editor';
 import { HeaderPanel } from 'components/HeaderPanel';
 import { SlideListPanel } from 'components/SlideListPanel';
 import { ToolsPanel } from 'components/ToolsPanel';
@@ -7,7 +8,7 @@ import React, { useCallback, useEffect } from 'react';
 import { TrawApp } from 'state';
 import { styled } from 'stitches.config';
 import { TEST_DOCUMENT_1, TEST_USER_1 } from 'utils/testUtil';
-import { BlockPanel, Slide } from './components';
+import { BlockPanel } from './components';
 import './index.css';
 
 export interface TrawProps {
@@ -64,7 +65,7 @@ const Traw = ({ app }: TrawProps) => {
   return (
     <TrawContext.Provider value={trawApp}>
       <div id="traw" data-testid="traw" className="flex flex-1 flex-col overflow-hidden ">
-        <Slide />
+        <Editor />
         <StyledUI>
           <HeaderPanel />
           <TopPanel Room={<div />} />

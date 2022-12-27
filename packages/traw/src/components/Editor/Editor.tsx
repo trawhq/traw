@@ -2,7 +2,7 @@ import { shapeUtils, TDDocument, TDStatus, TLDR } from '@tldraw/tldraw';
 import { useKeyboardShortcuts, useTrawApp } from 'hooks';
 import React, { useCallback, useEffect } from 'react';
 
-import { styled } from '@stitches/react';
+import { styled } from 'stitches.config';
 import { CursorComponent, Renderer } from '@tldraw/core';
 import { TDCallbacks } from '@tldraw/tldraw/dist/state';
 import { useTldrawApp } from 'hooks/useTldrawApp';
@@ -418,7 +418,19 @@ const OneOff = React.memo(function OneOff({
   return null;
 });
 
-export const Editor = () => {
+export interface EditorProps {
+  /**
+   * (optional) Custom components to override parts of the default UI.
+   */
+  components?: {
+    /**
+     * The component to render for multiplayer cursors.
+     */
+    Cursor?: CursorComponent;
+  };
+}
+
+export const Editor = ({ components }: EditorProps) => {
   const TrawApp = useTrawApp();
   const slideDomRef = React.useRef<HTMLDivElement>(null);
 
@@ -440,7 +452,13 @@ export const Editor = () => {
   return (
     <div id="traw-editor" className="relative w-full h-full" ref={slideDomRef}>
       <div className="absolute left-0 right-0 top-0 bottom-0 w-full h-full">
-        <Tldraw showMultiplayerMenu={false} darkMode={false} showMenu={false} showPages={false} />
+        <Tldraw
+          showMultiplayerMenu={false}
+          darkMode={false}
+          showMenu={false}
+          showPages={false}
+          components={components}
+        />
       </div>
     </div>
   );

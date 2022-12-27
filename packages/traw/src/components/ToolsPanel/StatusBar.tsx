@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { breakpoints } from 'utils/breakpoints';
 import { useTldrawApp } from 'hooks/useTldrawApp';
-import { styled } from '@stitches/react';
+import { styled } from 'stitches.config';
 import { TDSnapshot } from '@tldraw/tldraw';
 
 const statusSelector = (s: TDSnapshot) => s.appState.status;
