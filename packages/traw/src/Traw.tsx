@@ -7,21 +7,23 @@ import { TrawContext } from 'hooks';
 import React, { useCallback, useEffect } from 'react';
 import { TrawApp } from 'state';
 import { styled } from 'stitches.config';
+import { TrawDocument } from 'types';
 import { TEST_DOCUMENT_1, TEST_USER_1 } from 'utils/testUtil';
 import { BlockPanel } from './components';
 import './index.css';
 
 export interface TrawProps {
   app?: TrawApp;
+  document?: TrawDocument;
 }
 
-const Traw = ({ app }: TrawProps) => {
+const Traw = ({ app, document }: TrawProps) => {
   // Create a new app when the component mounts.
   const [trawApp] = React.useState(
     app ??
       new TrawApp({
         user: TEST_USER_1,
-        document: TEST_DOCUMENT_1,
+        document: document || TEST_DOCUMENT_1,
       }),
   );
 

@@ -179,47 +179,7 @@ export class TrawApp {
       user,
       document,
       records: recordMap,
-      blocks:
-        process.env.NODE_ENV === 'development'
-          ? {
-              'example-1': {
-                id: 'example-1',
-                type: TRBlockType.TALK,
-                userId: 'example-1',
-                text: '동해물과 백두산이 마르고 닳도록 하느님이 보우하사 우리 나라 만세',
-                time: Date.now(),
-                isActive: true,
-                voices: [
-                  {
-                    blockId: 'example-1',
-                    voiceId: 'example-1-1',
-                    ext: 'mp4',
-                    url: '',
-                  },
-                ],
-                voiceStart: 0,
-                voiceEnd: 0,
-              },
-              'example-2': {
-                id: 'example-2',
-                type: TRBlockType.TALK,
-                userId: 'example-2',
-                text: '무궁화 삼천리 화려강산 대한 사람 대한으로 길이 보전하세',
-                time: Date.now() + 1000,
-                isActive: true,
-                voices: [
-                  {
-                    blockId: 'example-2',
-                    voiceId: 'example-2-1',
-                    ext: 'mp4',
-                    url: '',
-                  },
-                ],
-                voiceStart: 0,
-                voiceEnd: 0,
-              },
-            }
-          : {},
+      blocks: {},
     };
     this.store = createVanilla<TrawSnapshot>(() => this._state);
     if (process.env.NODE_ENV === 'development') {
@@ -307,6 +267,7 @@ export class TrawApp {
       onChangePresence: this.onChangePresence,
       onUndo: this.handleUndo,
       onRedo: this.handleRedo,
+      onSessionStart: this.setActionStartTime,
     };
 
     this.app = app;
@@ -493,7 +454,7 @@ export class TrawApp {
             data: {
               id: command.after.appState.currentPageId,
             },
-            start: this._actionStartTime ? this._actionStartTime : 0,
+            start: Date.now(),
             end: Date.now(),
             origin: document.id,
           });
@@ -546,7 +507,7 @@ export class TrawApp {
             shapes: shapeIds,
           },
           slideId: pageId,
-          start: this._actionStartTime || new Date().getTime(),
+          start: this._actionStartTime || Date.now(),
           end: Date.now(),
           origin: document.id,
         });
@@ -579,7 +540,7 @@ export class TrawApp {
             assets,
           },
           slideId: pageId,
-          start: this._actionStartTime || new Date().getTime(),
+          start: this._actionStartTime || Date.now(),
           end: Date.now(),
           origin: document.id,
         });
@@ -954,6 +915,7 @@ export class TrawApp {
         };
       }),
     );
+    this.app.resetDocument();
 
     this.applyRecordsFromFirst();
   };

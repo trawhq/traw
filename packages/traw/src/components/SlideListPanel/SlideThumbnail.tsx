@@ -22,8 +22,8 @@ const SlideThumbnail = ({ page }: SlideThumbnailProps) => {
     return state.camera[state.user.id].cameras[page.id];
   });
   const tlCamera = useMemo(() => {
-    if (camera) return convertCameraTRtoTD(camera, { width: 133, height: 75 });
-    else return convertCameraTRtoTD(DEFAULT_CAMERA, { width: 133, height: 75 });
+    if (camera) return convertCameraTRtoTD(camera, { width: 105, height: 59 });
+    else return convertCameraTRtoTD(DEFAULT_CAMERA, { width: 105, height: 59 });
   }, [camera]);
 
   const { settings, document } = state;
