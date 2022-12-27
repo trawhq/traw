@@ -1,14 +1,11 @@
-import { styled } from 'stitches.config';
-import * as React from 'react';
-import { breakpoints } from 'utils/breakpoints';
-import { useTldrawApp } from 'hooks/useTldrawApp';
-import { DoubleArrowLeftIcon } from 'icons/DoubleArrowLeft';
+import { PlusIcon } from '@radix-ui/react-icons';
 import SlideListItem, { SlideListItemState } from 'components/SlideListPanel/SlideListItem';
 import { useTrawApp } from 'hooks';
-import { PlusIcon } from '@radix-ui/react-icons';
-import { TDSnapshot } from '@tldraw/tldraw';
-
-const currentPageIndexSelector = (s: TDSnapshot) => s.document.pages[s.appState.currentPageId].childIndex;
+import { useTldrawApp } from 'hooks/useTldrawApp';
+import { DoubleArrowLeftIcon } from 'icons/DoubleArrowLeft';
+import * as React from 'react';
+import { styled } from 'stitches.config';
+import { breakpoints } from 'utils/breakpoints';
 
 export const SlideListPanel = React.memo(function SlideListPanel() {
   const slideRef = React.useRef<Record<string, HTMLElement>>({});
@@ -24,7 +21,7 @@ export const SlideListPanel = React.memo(function SlideListPanel() {
   const viewerCount = 1;
   const selectState = SlideListItemState.DEFAULT;
 
-  const currentPageIndex = tldrawApp.useStore(currentPageIndexSelector);
+  const currentPageIndex = Object.keys(pages).indexOf(currentPageId) + 1;
 
   const handleSlideClick = (slideId: string) => {
     app.selectSlide(slideId);

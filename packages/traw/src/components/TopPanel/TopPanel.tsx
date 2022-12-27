@@ -11,10 +11,7 @@ export interface TopPanelProps {
 export const TopPanel = React.memo(function TopPanel({ Room }: TopPanelProps) {
   return (
     <>
-      <StyledTopPanelContainer bp={breakpoints}>
-        {Room}
-        Room
-      </StyledTopPanelContainer>
+      <StyledTopPanelContainer bp={breakpoints}>{Room}</StyledTopPanelContainer>
     </>
   );
 });

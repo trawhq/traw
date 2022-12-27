@@ -4,7 +4,7 @@ import { SlideListPanel } from 'components/SlideListPanel';
 import { ToolsPanel } from 'components/ToolsPanel';
 import { TopPanel } from 'components/TopPanel';
 import { TrawContext } from 'hooks';
-import React, { useCallback, useEffect } from 'react';
+import React, { ReactNode, useCallback, useEffect } from 'react';
 import { TrawApp } from 'state';
 import { styled } from 'stitches.config';
 import { TrawDocument } from 'types';
@@ -15,9 +15,10 @@ import './index.css';
 export interface TrawProps {
   app?: TrawApp;
   document?: TrawDocument;
+  RoomComponent?: ReactNode;
 }
 
-const Traw = ({ app, document }: TrawProps) => {
+const Traw = ({ app, document, RoomComponent }: TrawProps) => {
   // Create a new app when the component mounts.
   const [trawApp] = React.useState(
     app ??
@@ -70,7 +71,7 @@ const Traw = ({ app, document }: TrawProps) => {
         <Editor />
         <StyledUI>
           <HeaderPanel />
-          <TopPanel Room={<div />} />
+          <TopPanel Room={RoomComponent || <div />} />
           <BlockPanel
             handlePlayClick={handlePlayClick}
             onClickStartRecording={startRecording}
