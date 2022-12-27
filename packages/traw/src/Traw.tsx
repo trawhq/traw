@@ -12,13 +12,21 @@ import { TEST_DOCUMENT_1, TEST_USER_1 } from 'utils/testUtil';
 import { BlockPanel } from './components';
 import './index.css';
 
+import { CursorComponent } from '@tldraw/core';
+
 export interface TrawProps {
   app?: TrawApp;
   document?: TrawDocument;
-  RoomComponent?: ReactNode;
+  components?: {
+    TopMenu?: ReactNode;
+    /**
+     * The component to render for multiplayer cursors.
+     */
+    Cursor?: CursorComponent;
+  };
 }
 
-const Traw = ({ app, document, RoomComponent }: TrawProps) => {
+const Traw = ({ app, document, components }: TrawProps) => {
   // Create a new app when the component mounts.
   const [trawApp] = React.useState(
     app ??
@@ -68,10 +76,10 @@ const Traw = ({ app, document, RoomComponent }: TrawProps) => {
   return (
     <TrawContext.Provider value={trawApp}>
       <div id="traw" data-testid="traw" className="flex flex-1 flex-col overflow-hidden ">
-        <Editor />
+        <Editor components={components} />
         <StyledUI>
           <HeaderPanel />
-          <TopPanel Room={RoomComponent || <div />} />
+          <TopPanel Room={components?.TopMenu || <div />} />
           <BlockPanel
             handlePlayClick={handlePlayClick}
             onClickStartRecording={startRecording}
