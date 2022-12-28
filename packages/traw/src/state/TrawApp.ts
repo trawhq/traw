@@ -205,23 +205,18 @@ export class TrawApp {
           );
         },
         onBlockCreated: ({ blockId, text, time, voiceStart, voiceEnd }) => {
-          this.store.setState((state) =>
-            produce(state, (draft) => {
-              const block: TRBlock = {
-                id: blockId,
-                time,
-                voiceStart,
-                voiceEnd,
-                text,
-                isActive: true,
-                type: TRBlockType.TALK,
-                userId: this.editorId,
-                voices: [],
-              };
-
-              draft.blocks[block.id] = block;
-            }),
-          );
+          const block: TRBlock = {
+            id: blockId,
+            time,
+            voiceStart,
+            voiceEnd,
+            text,
+            isActive: true,
+            type: TRBlockType.TALK,
+            userId: this.editorId,
+            voices: [],
+          };
+          this.createBlock(block);
         },
         onVoiceCreated: async ({ voiceId, file, blockId, ext }) => {
           let url: string | false;
@@ -868,6 +863,25 @@ export class TrawApp {
         users: Object.fromEntries(others.map((user) => [user.id, user])),
       },
     });
+  };
+
+  createBlock = (block: TRBlock) => {
+    this.store.setState(
+      produce((state) => {
+        state.blocks[block.id] = block;
+      }),
+    );
+    this.emit(TrawEventType.CreateBlock, { tldrawApp: this.app, block });
+  };
+
+  addBlocks = (blocks: TRBlock[]) => {
+    this.store.setState(
+      produce((state) => {
+        blocks.forEach((block) => {
+          state.blocks[block.id] = block;
+        });
+      }),
+    );
   };
 
   private getPlayableVoice = (block: TRBlock | undefined): TRBlockVoice | undefined => {

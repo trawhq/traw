@@ -1,4 +1,4 @@
-import { TRCamera, TRRecord } from 'types';
+import { TRBlock, TRCamera, TRRecord } from 'types';
 import { TldrawApp } from '@tldraw/tldraw';
 
 export interface TrawBaseEvent {
@@ -15,6 +15,17 @@ export interface CreateRecordsEvent extends TrawBaseEvent {
 }
 
 export type CreateRecordsHandler = (event: CreateRecordsEvent) => void;
+
+/**
+ * Event for newly created block
+ *
+ * Block added by TrawApp.addBlocks will not trigger this event
+ */
+export interface CreateBlockEvent extends TrawBaseEvent {
+  block: TRBlock;
+}
+
+export type CreateBlockHandler = (event: CreateBlockEvent) => void;
 
 /**
  * Event triggered when TldrawApp is changed.
@@ -42,6 +53,7 @@ export type CameraChangeHandler = (event: CameraChangeEvent) => void;
  */
 export enum TrawEventType {
   CreateRecords = 'createRecords',
+  CreateBlock = 'createBlock',
   TldrawAppChange = 'tldrawAppChange',
   PointerMove = 'pointerMove',
   CameraChange = 'cameraChange',
@@ -55,9 +67,15 @@ export interface EventTypeHandlerMap {
   [TrawEventType.TldrawAppChange]: TldrawAppChangeHandler;
   [TrawEventType.PointerMove]: PointerMoveHandler;
   [TrawEventType.CameraChange]: CameraChangeHandler;
+  [TrawEventType.CreateBlock]: CreateBlockHandler;
 }
 
 /**
  * Union type of event handlers
  */
-export type TrawEventHandler = CreateRecordsHandler | TldrawAppChangeHandler | PointerMoveHandler | CameraChangeHandler;
+export type TrawEventHandler =
+  | CreateRecordsHandler
+  | TldrawAppChangeHandler
+  | PointerMoveHandler
+  | CameraChangeHandler
+  | CreateBlockHandler;
