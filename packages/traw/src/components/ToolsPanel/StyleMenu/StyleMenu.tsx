@@ -71,6 +71,7 @@ const optionsSelector = (s: TDSnapshot) => {
       let hasText = false;
       let hasLabel = false;
       for (const id of s.document.pageStates[pageId].selectedIds) {
+        if (!page.shapes[id]) continue;
         if ('text' in page.shapes[id]) hasText = true;
         if ('label' in page.shapes[id]) hasLabel = true;
       }

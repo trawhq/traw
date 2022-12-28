@@ -684,6 +684,25 @@ export class TrawApp {
             break;
           case 'delete': {
             if (!record.slideId) break;
+            if (this.app.selectedIds) {
+              // deselect deleted shapes
+              const nextIds = this.app.selectedIds.filter((id) => !record.data.shapes.includes(id));
+              this.app.patchState(
+                {
+                  appState: {
+                    activeTool: 'select',
+                  },
+                  document: {
+                    pageStates: {
+                      [this.app.currentPageId]: {
+                        selectedIds: nextIds,
+                      },
+                    },
+                  },
+                },
+                `selected`,
+              );
+            }
             this.app.patchState({
               document: {
                 pages: {
