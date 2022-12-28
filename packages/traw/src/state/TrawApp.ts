@@ -276,7 +276,7 @@ export class TrawApp {
   }
 
   private _isDelete = (patch: TldrawPatch) => {
-    const shapes = patch.document?.pages?.['page']?.shapes;
+    const shapes = patch.document?.pages?.[Object.keys(patch.document.pages)[0]]?.shapes;
     if (!shapes) return false;
     return shapes[Object.keys(shapes)[0]] === undefined;
   };
@@ -438,9 +438,7 @@ export class TrawApp {
     this._actionStartTime = Date.now();
   };
 
-  // private handleZoom = (state: TDSnapshot) => {};
-
-  private recordCommand = (app: TldrawApp, command: TldrawCommand) => {
+  protected recordCommand = (app: TldrawApp, command: TldrawCommand) => {
     const user = this.store.getState().user;
     const document = this.store.getState().document;
     const records: TRRecord[] = [];
@@ -684,6 +682,7 @@ export class TrawApp {
             break;
           case 'delete': {
             if (!record.slideId) break;
+            if (!record.data.shapes.length) break;
             if (this.app.selectedIds) {
               // deselect deleted shapes
               const nextIds = this.app.selectedIds.filter((id) => !record.data.shapes.includes(id));
