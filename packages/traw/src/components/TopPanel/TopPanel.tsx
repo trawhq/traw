@@ -23,7 +23,7 @@ const StyledTopPanelContainer = styled('div', {
   minHeight: 0,
   width: 'auto',
   height: 50,
-  gap: '$4',
+  gap: '3px',
   display: 'flex',
   justifyContent: 'center',
   alignItems: 'center',

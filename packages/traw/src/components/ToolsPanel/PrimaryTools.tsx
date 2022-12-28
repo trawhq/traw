@@ -1,11 +1,4 @@
-import {
-  ArrowTopRightIcon,
-  CursorArrowIcon,
-  ImageIcon,
-  Pencil1Icon,
-  Pencil2Icon,
-  TextIcon,
-} from '@radix-ui/react-icons';
+import { ArrowTopRightIcon, CursorArrowIcon, ImageIcon, Pencil1Icon, TextIcon } from '@radix-ui/react-icons';
 import * as React from 'react';
 import { breakpoints } from 'utils/breakpoints';
 
@@ -52,9 +45,9 @@ export const PrimaryTools = React.memo(function PrimaryTools() {
     app.selectTool(TDShapeType.Text);
   }, [app]);
 
-  const selectStickyTool = React.useCallback(() => {
-    app.selectTool(TDShapeType.Sticky);
-  }, [app]);
+  // const selectStickyTool = React.useCallback(() => {
+  //   app.selectTool(TDShapeType.Sticky);
+  // }, [app]);
 
   const uploadMedias = React.useCallback(async () => {
     app.openAsset();
@@ -125,7 +118,7 @@ export const PrimaryTools = React.memo(function PrimaryTools() {
       >
         <TextIcon />
       </ToolButtonWithTooltip>
-      <ToolButtonWithTooltip
+      {/* <ToolButtonWithTooltip
         variant="primary"
         kbd={'0'}
         label={'sticky'}
@@ -134,7 +127,7 @@ export const PrimaryTools = React.memo(function PrimaryTools() {
         id="TD-PrimaryTools-Pencil2"
       >
         <Pencil2Icon />
-      </ToolButtonWithTooltip>
+      </ToolButtonWithTooltip> */}
       <ToolButtonWithTooltip variant="primary" label={'image'} onClick={uploadMedias} id="TD-PrimaryTools-Image">
         <ImageIcon />
       </ToolButtonWithTooltip>

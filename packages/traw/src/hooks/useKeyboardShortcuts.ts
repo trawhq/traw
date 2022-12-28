@@ -145,15 +145,15 @@ export function useKeyboardShortcuts(ref: React.RefObject<HTMLDivElement>) {
     [app],
   );
 
-  useHotkeys(
-    's,0',
-    () => {
-      if (!canHandleEvent(true)) return;
-      app.selectTool(TDShapeType.Sticky);
-    },
-    undefined,
-    [app],
-  );
+  // useHotkeys(
+  //   's,0',
+  //   () => {
+  //     if (!canHandleEvent(true)) return;
+  //     app.selectTool(TDShapeType.Sticky);
+  //   },
+  //   undefined,
+  //   [app],
+  // );
 
   /* ---------------------- Misc ---------------------- */
 

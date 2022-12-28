@@ -75,7 +75,7 @@ const Traw = ({ app, document, components }: TrawProps) => {
   return (
     <TrawContext.Provider value={trawApp}>
       <div id="traw" data-testid="traw" className="flex flex-1 flex-col overflow-hidden ">
-        <Editor components={components} />
+        <Editor components={components} readOnly={document ? !document.canEdit : false} />
         <StyledUI>
           <HeaderPanel />
           <TopPanel Room={components?.TopMenu || <div />} />

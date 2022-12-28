@@ -428,9 +428,10 @@ export interface EditorProps {
      */
     Cursor?: CursorComponent;
   };
+  readOnly?: boolean;
 }
 
-export const Editor = ({ components }: EditorProps) => {
+export const Editor = ({ components, readOnly = false }: EditorProps) => {
   const TrawApp = useTrawApp();
   const slideDomRef = React.useRef<HTMLDivElement>(null);
 
@@ -458,6 +459,7 @@ export const Editor = ({ components }: EditorProps) => {
           showMenu={false}
           showPages={false}
           components={components}
+          readOnly={readOnly}
         />
       </div>
     </div>
