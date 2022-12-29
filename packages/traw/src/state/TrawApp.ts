@@ -227,18 +227,12 @@ export class TrawApp {
           }
 
           if (url) {
-            this.store.setState((state) =>
-              produce(state, (draft) => {
-                const blockVoice: TRBlockVoice = {
-                  blockId,
-                  voiceId,
-                  ext,
-                  url: url as string,
-                };
-
-                draft.blocks[blockId]?.voices.push(blockVoice);
-              }),
-            );
+            this.createBlockVoice(blockId, {
+              blockId,
+              voiceId,
+              ext,
+              url: url as string,
+            });
           } else {
             console.log('Failed to get voice URL');
           }
@@ -872,6 +866,15 @@ export class TrawApp {
       }),
     );
     this.emit(TrawEventType.CreateBlock, { tldrawApp: this.app, block });
+  };
+
+  createBlockVoice = (blockId: string, voice: TRBlockVoice) => {
+    this.store.setState((state) =>
+      produce(state, (draft) => {
+        draft.blocks[blockId]?.voices.push(voice);
+      }),
+    );
+    this.emit(TrawEventType.CreateBlockVoice, { tldrawApp: this.app, voice });
   };
 
   addBlocks = (blocks: TRBlock[]) => {
