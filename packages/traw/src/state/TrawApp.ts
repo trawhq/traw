@@ -955,6 +955,15 @@ export class TrawApp {
     );
   };
 
+  public togglePlay = () => {
+    const { mode } = this.store.getState().player;
+    if (mode === PlayModeType.PLAYING) {
+      this.pause();
+    } else {
+      this.resume();
+    }
+  };
+
   public resume = () => {
     if (this.audioInstance) {
       this.audioInstance.play();

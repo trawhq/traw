@@ -690,4 +690,14 @@ export function useKeyboardShortcuts(ref: React.RefObject<HTMLDivElement>) {
     undefined,
     [app],
   );
+
+  useHotkeys(
+    'space',
+    () => {
+      if (!canHandleEvent()) return;
+      trawApp.togglePlay();
+    },
+    undefined,
+    [trawApp],
+  );
 }
