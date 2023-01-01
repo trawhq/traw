@@ -14,7 +14,7 @@ import {
   TRViewport,
 } from 'types';
 import createVanilla, { StoreApi } from 'zustand/vanilla';
-import { DEFAULT_CAMERA, SLIDE_HEIGHT, SLIDE_RATIO, SLIDE_WIDTH } from '../constants';
+import { DEFAULT_CAMERA, DELETE_ID, SLIDE_HEIGHT, SLIDE_RATIO, SLIDE_WIDTH } from '../constants';
 import { mountStoreDevtool } from 'simple-zustand-devtools';
 
 import produce from 'immer';
@@ -25,6 +25,7 @@ import { TrawRecorder } from 'recorder/TrawRecorder';
 import { Howl } from 'howler';
 import { encodeFile } from 'utils/base64';
 import { isChrome } from 'utils/common';
+import { cloneDeepWith } from 'lodash';
 
 export const convertCameraTRtoTD = (camera: TRCamera, viewport: TRViewport): TDCamera => {
   const ratio = viewport.width / viewport.height;
@@ -142,6 +143,7 @@ export class TrawApp {
 
   constructor({ user, document, records = [] }: TrawAppOptions) {
     this.editorId = user.id;
+    console.log(this);
 
     const recordMap: Record<string, TRRecord> = {};
     records.forEach((record) => {
@@ -264,10 +266,20 @@ export class TrawApp {
     this.emit(TrawEventType.TldrawAppChange, { tldrawApp: app });
   }
 
-  private _isDelete = (patch: TldrawPatch) => {
-    const shapes = patch.document?.pages?.[Object.keys(patch.document.pages)[0]]?.shapes;
-    if (!shapes) return false;
-    return shapes[Object.keys(shapes)[0]] === undefined;
+  private convertUndefinedToDelete = function handleDel<T>(patch: T): T {
+    return cloneDeepWith(patch, (value) => {
+      if (value === undefined) {
+        return DELETE_ID;
+      }
+    });
+  };
+
+  private convertDeleteToUndefined = function handleUndefined<T>(patch: T): T {
+    return cloneDeepWith(patch, (value) => {
+      if (value === DELETE_ID) {
+        return null;
+      }
+    });
   };
 
   private handleUndo = (app: TldrawApp) => {
@@ -275,9 +287,8 @@ export class TrawApp {
     const { stack, pointer } = trawDrawApp.getStack();
     const command = stack[pointer + 1];
     if (!command) return;
-    const isDelete = this._isDelete(command.before);
     this.recordCommand(app, {
-      id: isDelete ? 'delete' : 'edit',
+      id: 'edit',
       before: command.after,
       after: command.before,
     });
@@ -288,9 +299,8 @@ export class TrawApp {
     const { stack, pointer } = trawDrawApp.getStack();
     const command = stack[pointer];
     if (!command) return;
-    const isDelete = this._isDelete(command.after);
     this.recordCommand(app, {
-      id: isDelete ? 'delete' : 'edit',
+      id: 'edit',
       before: command.before,
       after: command.after,
     });
@@ -430,6 +440,7 @@ export class TrawApp {
   protected recordCommand = (app: TldrawApp, command: TldrawCommand) => {
     const user = this.store.getState().user;
     const document = this.store.getState().document;
+    const tlDocument = app.document;
     const records: TRRecord[] = [];
     switch (command.id) {
       case 'change_page':
@@ -476,35 +487,14 @@ export class TrawApp {
       case 'delete_page':
         break;
       case 'erase':
-      case 'delete': {
-        if (!command.after.document || !command.after.document.pages) break;
-        const pageId = Object.keys(command.after.document.pages)[0];
-
-        const shapes = command.after.document.pages[pageId]?.shapes;
-        if (!shapes) break;
-
-        const shapeIds = Object.keys(shapes);
-        if (shapeIds.length === 0) break;
-
-        records.push({
-          type: 'delete',
-          id: nanoid(),
-          user: user.id,
-          data: {
-            shapes: shapeIds,
-          },
-          slideId: pageId,
-          start: this._actionStartTime || Date.now(),
-          end: Date.now(),
-          origin: document.id,
-        });
-        break;
-      }
+      case 'delete':
       default: {
-        if (!command.after.document || !command.after.document.pages) break;
-        const pageId = Object.keys(command.after.document.pages)[0];
+        const patch = this.convertUndefinedToDelete(command.after);
+        if (!patch.document || !patch.document.pages) break;
+        const pageId = Object.keys(patch.document.pages)[0];
+        if (!pageId) break;
 
-        const shapes = command.after.document.pages[pageId]?.shapes;
+        const shapes = patch.document.pages[pageId]?.shapes;
         if (!shapes) break;
 
         const assetIds = Object.values(shapes)
@@ -518,14 +508,34 @@ export class TrawApp {
             return acc;
           }, {});
 
+        const bindings = patch.document.pages[pageId]?.bindings;
+        // console.log(JSON.stringify(bindings), Object.values(tlDocument.pages[pageId]?.shapes));
+        // if (bindings) {
+        //   Object.values(bindings).forEach((binding) => {
+        //     if ((binding as any) === DELETE_ID) return;
+        //     if (binding) {
+        //       if (binding.toId) {
+        //         binding.toId =
+        //           tlDocument.pages[pageId]?.shapes[binding.toId] || (shapes[binding.toId] as any) !== DELETE_ID
+        //             ? binding.toId
+        //             : binding.id;
+        //       }
+        //       if (binding.fromId) {
+        //         binding.fromId =
+        //           tlDocument.pages[pageId]?.shapes[binding.fromId] || (shapes[binding.fromId] as any) !== DELETE_ID
+        //             ? binding.fromId
+        //             : binding.id;
+        //       }
+        //     }
+        //   });
+        // }
+        // console.log(bindings);
+
         records.push({
           type: command.id as ActionType,
           id: nanoid(),
           user: user.id,
-          data: {
-            shapes,
-            assets,
-          },
+          data: bindings ? { shapes, assets, bindings } : { shapes, assets },
           slideId: pageId,
           start: this._actionStartTime || Date.now(),
           end: Date.now(),
@@ -669,12 +679,12 @@ export class TrawApp {
             );
             isCameraChanged = true;
             break;
-          case 'delete': {
-            if (!record.slideId) break;
-            if (!record.data.shapes.length) break;
+          default: {
+            const { data, slideId } = record;
+            if (!slideId) break;
             if (this.app.selectedIds) {
               // deselect deleted shapes
-              const nextIds = this.app.selectedIds.filter((id) => !record.data.shapes.includes(id));
+              const nextIds = this.app.selectedIds.filter((id) => record.data.shapes[id] !== DELETE_ID);
               this.app.patchState(
                 {
                   appState: {
@@ -691,38 +701,35 @@ export class TrawApp {
                 `selected`,
               );
             }
-            this.app.patchState({
-              document: {
-                pages: {
-                  [record.slideId]: {
-                    shapes: record.data.shapes.reduce((acc: Record<string, undefined>, shapeId: string) => {
-                      acc[shapeId] = undefined;
-                      return acc;
-                    }, {}),
-                  },
-                },
-              },
-            });
-            break;
-          }
-          default: {
-            const { data, slideId } = record;
-            if (!slideId) break;
+            console.log(this.convertDeleteToUndefined(data.shapes));
             this.app.patchState({
               document: {
                 pages: {
                   [slideId]: {
                     shapes: {
-                      ...data.shapes,
+                      ...this.convertDeleteToUndefined(data.shapes),
                     },
                   },
                 },
                 assets: {
-                  ...data.assets,
+                  ...this.convertDeleteToUndefined(data.assets),
                 },
               },
             });
-            break;
+            if (data.bindings) {
+              this.app.patchState({
+                document: {
+                  pages: {
+                    [slideId]: {
+                      bindings: {
+                        ...this.convertDeleteToUndefined(data.bindings),
+                      },
+                    },
+                  },
+                },
+              });
+              break;
+            }
           }
         }
       });

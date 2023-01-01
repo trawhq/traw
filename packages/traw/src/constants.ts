@@ -8,3 +8,5 @@ export const DEFAULT_CAMERA: TRCamera = {
   center: { x: 0, y: 0 },
   zoom: 1,
 };
+
+export const DELETE_ID = '$delete';
