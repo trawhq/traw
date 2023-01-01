@@ -1,7 +1,7 @@
 import BlockItem from 'components/BlockPanel/BlockItem';
 import { useTrawApp } from 'hooks';
 import React, { useMemo } from 'react';
-import { TrawSnapshot } from 'types';
+import { PlayModeType, TrawSnapshot } from 'types';
 import EmptyBlockPanel from './EmptyBlockPanel';
 export interface BlockListProps {
   handlePlayClick: (blockId: string) => void;
@@ -13,7 +13,9 @@ export default function BlockList({ handlePlayClick, onClickStartRecording, isRe
   const app = useTrawApp();
   const blocks = app.useStore((state: TrawSnapshot) => state.blocks);
   const document = app.useStore((state: TrawSnapshot) => state.document);
-  const targetBlockId = app.useStore((state: TrawSnapshot) => state.player.targetBlockId);
+  const targetBlockId = app.useStore((state: TrawSnapshot) =>
+    state.player.mode === PlayModeType.PLAYING ? state.player.targetBlockId : undefined,
+  );
 
   const sortedBlocks = useMemo(() => {
     return Object.values(blocks).sort((a, b) => a.time - b.time);

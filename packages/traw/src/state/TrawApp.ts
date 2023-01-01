@@ -335,8 +335,11 @@ export class TrawApp {
   };
 
   syncCamera = () => {
-    const { viewport, camera } = this.store.getState();
-    const currentPageId = camera[this.editorId].targetSlideId;
+    const { viewport, camera, player } = this.store.getState();
+
+    const { playAs } = player;
+    const targetUserId = playAs || this.editorId;
+    const currentPageId = camera[targetUserId].targetSlideId;
     if (!currentPageId) return;
 
     if (currentPageId !== this.app.appState.currentPageId) {
@@ -347,7 +350,7 @@ export class TrawApp {
       });
     }
 
-    const trCamera = camera[this.editorId].cameras[currentPageId];
+    const trCamera = camera[targetUserId].cameras[currentPageId];
     if (!trCamera) return;
 
     const tdCamera = convertCameraTRtoTD(trCamera, viewport);
@@ -927,6 +930,7 @@ export class TrawApp {
           ...state.player,
           targetBlockId: blockId,
           mode: PlayModeType.PLAYING,
+          playAs: block.userId,
           start: Date.now(),
           end: Date.now() + (block.voiceEnd - block.voiceStart),
         };
@@ -953,6 +957,7 @@ export class TrawApp {
           current: 0,
           volume: 1,
           loop: false,
+          playAs: undefined,
         };
       }),
     );
