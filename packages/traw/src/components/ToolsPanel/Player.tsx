@@ -1,4 +1,4 @@
-import { PauseIcon, PlayIcon } from '@radix-ui/react-icons';
+import { PauseIcon, PlayIcon, ReloadIcon } from '@radix-ui/react-icons';
 import { styled } from '@stitches/react';
 import { useTrawApp } from 'hooks';
 import React, { useCallback, useMemo } from 'react';
@@ -7,7 +7,7 @@ import { PlayModeType, TRBlock } from 'types';
 const Player = () => {
   const app = useTrawApp();
   const mode = app.useStore((state) => state.player.mode);
-  const { targetBlockId, end, start, totalTime } = app.useStore((state) => state.player);
+  const { targetBlockId, end, start, totalTime, isDone } = app.useStore((state) => state.player);
   const blocks = app.useStore((state) => state.blocks);
 
   const isPlaying = mode === PlayModeType.PLAYING;
@@ -58,7 +58,9 @@ const Player = () => {
   };
 
   const handlePlay = () => {
-    if (isPlaying) {
+    if (isDone) {
+      app.playFromFirstBlock();
+    } else if (isPlaying) {
       app.pause();
     } else {
       app.resume();
@@ -68,7 +70,7 @@ const Player = () => {
   return (
     <div className="w-full pb-[27px] flex flex-row px-8 gap-2.5">
       <button className="hover:bg-traw-grey-50 self-center rounded-full p-1.5" onClick={handlePlay}>
-        {mode === PlayModeType.PLAYING ? <PauseIcon /> : <PlayIcon />}
+        {isDone ? <ReloadIcon /> : mode === PlayModeType.PLAYING ? <PauseIcon /> : <PlayIcon />}
       </button>
       <div
         className="relative cursor-pointer flex-1 overflow-hidden bg-white rounded-full h-[9px] translate-z-0 self-center"

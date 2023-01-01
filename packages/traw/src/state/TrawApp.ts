@@ -159,6 +159,7 @@ export class TrawApp {
         volume: 1,
         loop: false,
         totalTime: 0,
+        isDone: false,
       },
       editor: {
         isPanelOpen: true,
@@ -933,11 +934,19 @@ export class TrawApp {
           playAs: block.userId,
           start: Date.now(),
           end: Date.now() + (block.voiceEnd - block.voiceStart),
+          isDone: false,
         };
       }),
     );
     this._handlePlay();
   }
+
+  public playFromFirstBlock = () => {
+    const blocks = Object.values(this.store.getState().blocks).sort((a, b) => a.time - b.time);
+    if (blocks.length === 0) return;
+    const firstBlock = blocks[0];
+    this.playBlock(firstBlock.id);
+  };
 
   public pause = () => {
     if (this.audioInstance) {
@@ -1000,6 +1009,7 @@ export class TrawApp {
           volume: 1,
           loop: false,
           playAs: undefined,
+          isDone: true,
         };
       }),
     );
@@ -1028,7 +1038,11 @@ export class TrawApp {
           if (nextBlock) {
             this.playBlock(nextBlock.id);
           } else {
-            this.stopPlay();
+            if (player.loop) {
+              this.playFromFirstBlock();
+            } else {
+              this.stopPlay();
+            }
           }
         } else {
           this.stopPlay();

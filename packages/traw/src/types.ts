@@ -71,6 +71,7 @@ export type TrawSnapshot = {
     loop: boolean;
     volume: number;
     totalTime: number;
+    isDone: boolean;
   };
   editor: {
     isPanelOpen: boolean;
