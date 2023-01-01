@@ -447,7 +447,6 @@ export class TrawApp {
   protected recordCommand = (app: TldrawApp, command: TldrawCommand) => {
     const user = this.store.getState().user;
     const document = this.store.getState().document;
-    const tlDocument = app.document;
     const records: TRRecord[] = [];
     switch (command.id) {
       case 'change_page':
@@ -1071,6 +1070,15 @@ export class TrawApp {
     this.store.setState(
       produce((state) => {
         state.editor.isPanelOpen = !state.editor.isPanelOpen;
+      }),
+    );
+  };
+
+  public backToEditor = () => {
+    this.stopPlay();
+    this.store.setState(
+      produce((state) => {
+        state.player.mode = PlayModeType.EDIT;
       }),
     );
   };

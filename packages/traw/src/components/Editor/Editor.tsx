@@ -443,6 +443,7 @@ export interface EditorProps {
 export const Editor = ({ components, readOnly = false }: EditorProps) => {
   const TrawApp = useTrawApp();
   const slideDomRef = React.useRef<HTMLDivElement>(null);
+  const isPlayMode = TrawApp.useStore((state) => state.player.mode !== PlayModeType.EDIT);
 
   const handleResize = useCallback(() => {
     if (!slideDomRef.current) return;
@@ -468,9 +469,10 @@ export const Editor = ({ components, readOnly = false }: EditorProps) => {
           showMenu={false}
           showPages={false}
           components={components}
-          readOnly={readOnly}
+          readOnly={false}
         />
       </div>
+      {(isPlayMode || readOnly) && <div className="absolute left-0 right-0 top-0 bottom-0 w-full h-full z-[1]"></div>}
     </div>
   );
 };
