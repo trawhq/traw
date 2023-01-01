@@ -939,6 +939,39 @@ export class TrawApp {
     this._handlePlay();
   }
 
+  public pause = () => {
+    if (this.audioInstance) {
+      this.audioInstance.pause();
+    }
+    this.store.setState(
+      produce((state) => {
+        state.player = {
+          ...state.player,
+          mode: PlayModeType.PAUSE,
+          current: Date.now() - state.player.start,
+          loop: false,
+        };
+      }),
+    );
+  };
+
+  public resume = () => {
+    if (this.audioInstance) {
+      this.audioInstance.play();
+    }
+    this.store.setState(
+      produce((state) => {
+        state.player = {
+          ...state.player,
+          mode: PlayModeType.PLAYING,
+          start: Date.now() - state.player.current,
+          end: Date.now() + (state.player.end - state.player.start - state.player.current),
+        };
+      }),
+    );
+    this._handlePlay();
+  };
+
   private playInterval: number | undefined;
 
   private stopPlay = () => {

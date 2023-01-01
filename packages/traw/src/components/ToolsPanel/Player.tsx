@@ -37,7 +37,8 @@ const Player = () => {
       }
     }
     return currentBaseTime;
-  }, [targetBlockId, sortedBlocks, getBlockDuration]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [targetBlockId, sortedBlocks, getBlockDuration, isPlaying]);
 
   const handleClick = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
     const { left, width } = e.currentTarget.getBoundingClientRect();
@@ -56,9 +57,17 @@ const Player = () => {
     if (targetBlock) app.playBlock(targetBlock);
   };
 
+  const handlePlay = () => {
+    if (isPlaying) {
+      app.pause();
+    } else {
+      app.resume();
+    }
+  };
+
   return (
     <div className="w-full pb-[27px] flex flex-row px-8 gap-2.5">
-      <button className="hover:bg-traw-grey-50 self-center rounded-full p-1.5">
+      <button className="hover:bg-traw-grey-50 self-center rounded-full p-1.5" onClick={handlePlay}>
         {mode === PlayModeType.PLAYING ? <PauseIcon /> : <PlayIcon />}
       </button>
       <div
