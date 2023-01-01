@@ -132,3 +132,9 @@
 ::-webkit-scrollbar {
   display: none;
 }
+
+@keyframes slideProgress {
+  100% {
+    width: 100%;
+  }
+}

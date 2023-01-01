@@ -883,7 +883,7 @@ export class TrawApp {
     );
   };
 
-  private getPlayableVoice = (block: TRBlock | undefined): TRBlockVoice | undefined => {
+  public getPlayableVoice = (block: TRBlock | undefined): TRBlockVoice | undefined => {
     if (!block || block.voices.length === 0) return undefined;
 
     const webmVoice = block.voices.find(({ ext }) => ext === 'webm');
@@ -946,8 +946,8 @@ export class TrawApp {
     this.store.setState(
       produce((state) => {
         state.player = {
-          mode: PlayModeType.EDIT,
-          isLimit: true,
+          mode: PlayModeType.STOP,
+          isLimit: false,
           start: 0,
           end: Infinity,
           current: 0,
