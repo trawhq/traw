@@ -13,7 +13,7 @@ export interface PanelHeaderProps {
 
 const formatTime = (time: number) => {
   const date = new Date(0);
-  date.setSeconds(time / 1000); // specify value for SECONDS here
+  date.setSeconds((time || 0) / 1000); // specify value for SECONDS here
   const timeString = date.toISOString().substring(11, 19);
   return timeString;
 };

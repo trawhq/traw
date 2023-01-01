@@ -946,10 +946,10 @@ export class TrawApp {
     this.store.setState(
       produce((state) => {
         state.player = {
+          ...state.player,
           mode: PlayModeType.STOP,
           isLimit: false,
           start: 0,
-          end: Infinity,
           current: 0,
           volume: 1,
           loop: false,

@@ -57,11 +57,14 @@ const Player = () => {
   };
 
   return (
-    <div className="w-full pb-[27px] flex flex-row px-8 gap-2.5" onClick={handleClick}>
+    <div className="w-full pb-[27px] flex flex-row px-8 gap-2.5">
       <button className="hover:bg-traw-grey-50 self-center rounded-full p-1.5">
         {mode === PlayModeType.PLAYING ? <PauseIcon /> : <PlayIcon />}
       </button>
-      <div className="relative cursor-pointer flex-1 overflow-hidden bg-white rounded-full h-[9px] translate-z-0 self-center">
+      <div
+        className="relative cursor-pointer flex-1 overflow-hidden bg-white rounded-full h-[9px] translate-z-0 self-center"
+        onClick={handleClick}
+      >
         <div
           className="bg-traw-purple"
           style={{
