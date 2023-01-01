@@ -159,6 +159,9 @@ export class TrawApp {
         volume: 1,
         loop: false,
       },
+      editor: {
+        isPanelOpen: true,
+      },
       viewport: {
         width: 0,
         height: 0,
@@ -969,6 +972,14 @@ export class TrawApp {
         this.playInterval = requestAnimationFrame(this._handlePlay);
       }
     }
+  };
+
+  togglePanel = () => {
+    this.store.setState(
+      produce((state) => {
+        state.editor.isPanelOpen = !state.editor.isPanelOpen;
+      }),
+    );
   };
 
   /*

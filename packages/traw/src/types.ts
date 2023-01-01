@@ -71,6 +71,9 @@ export type TrawSnapshot = {
     loop: boolean;
     volume: number;
   };
+  editor: {
+    isPanelOpen: boolean;
+  };
   viewport: TRViewport;
   records: Record<string, TRRecord>;
   blocks: Record<string, TRBlock>;
