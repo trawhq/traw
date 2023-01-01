@@ -8,6 +8,7 @@ import { PrimaryTools } from './PrimaryTools';
 import { StatusBar } from './StatusBar';
 import { StyleMenu } from './StyleMenu';
 import { useTrawApp } from 'hooks';
+import { PlayModeType } from 'types';
 
 const isDebugModeSelector = (s: TDSnapshot) => s.settings.isDebugMode;
 const dockPositionState = (s: TDSnapshot) => s.settings.dockPosition;
@@ -22,7 +23,9 @@ export const ToolsPanel = React.memo(function ToolsPanel({ onBlur }: ToolsPanelP
   const panelOpen = trawApp.useStore((state) => state.editor.isPanelOpen);
   const side = app.useStore(dockPositionState);
   const isDebugMode = app.useStore(isDebugModeSelector);
+  const isEdit = trawApp.useStore((state) => state.player.mode) === PlayModeType.EDIT;
 
+  if (!isEdit) return null;
   return (
     <>
       <StyledToolsPanelContainer panelOpen={panelOpen} side={side} onBlur={onBlur} bp={breakpoints} debug={isDebugMode}>
