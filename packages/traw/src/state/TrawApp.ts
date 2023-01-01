@@ -152,12 +152,13 @@ export class TrawApp {
     this._state = {
       player: {
         mode: PlayModeType.EDIT,
-        isLimit: true,
+        isLimit: false,
         start: 0,
         end: Infinity,
         current: 0,
         volume: 1,
         loop: false,
+        totalTime: 0,
       },
       editor: {
         isPanelOpen: true,
@@ -870,14 +871,14 @@ export class TrawApp {
   };
 
   addBlocks = (blocks: TRBlock[]) => {
-    let fullTime = 0;
+    let totalTime = 0;
     this.store.setState(
       produce((state) => {
         blocks.forEach((block) => {
           state.blocks[block.id] = block;
-          fullTime += block.voiceEnd - block.voiceStart;
+          totalTime += block.voiceEnd - block.voiceStart;
         });
-        state.player.fullTime = fullTime;
+        state.player.totalTime = totalTime;
       }),
     );
   };
@@ -960,6 +961,13 @@ export class TrawApp {
     this.applyRecordsFromFirst();
   };
 
+  private _getNextBlock = (blockId: string): TRBlock | undefined => {
+    const blocks = Object.values(this.store.getState().blocks);
+    const sortedBlocks = blocks.sort((a, b) => a.time - b.time);
+    const index = sortedBlocks.findIndex((b) => b.id === blockId);
+    return sortedBlocks[index + 1];
+  };
+
   private _handlePlay = () => {
     const { player } = this.store.getState();
     if (player.mode !== PlayModeType.PLAYING) {
@@ -967,7 +975,18 @@ export class TrawApp {
       return;
     } else {
       if (Date.now() > player.end) {
-        this.stopPlay();
+        // play next block
+        if (!player.isLimit) {
+          const nextBlock = this._getNextBlock(player.targetBlockId || '');
+          if (nextBlock) {
+            this.playBlock(nextBlock.id);
+          } else {
+            this.stopPlay();
+          }
+        } else {
+          this.stopPlay();
+        }
+
         return;
       } else {
         // update to current time

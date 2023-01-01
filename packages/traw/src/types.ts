@@ -70,7 +70,7 @@ export type TrawSnapshot = {
     isLimit: boolean;
     loop: boolean;
     volume: number;
-    fullTime: number;
+    totalTime: number;
   };
   editor: {
     isPanelOpen: boolean;
