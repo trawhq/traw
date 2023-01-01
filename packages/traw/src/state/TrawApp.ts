@@ -892,6 +892,8 @@ export class TrawApp {
     }
   };
 
+  private audioInstance: Howl | undefined;
+
   public playBlock(blockId: string) {
     const block = this.store.getState().blocks[blockId || ''];
     if (!block) return;
@@ -899,6 +901,10 @@ export class TrawApp {
 
     const playableVoice = this.getPlayableVoice(block);
     if (!playableVoice) return;
+
+    if (this.audioInstance) {
+      this.audioInstance.stop();
+    }
 
     this.app.resetDocument();
     this.pointer = -1;
@@ -909,6 +915,7 @@ export class TrawApp {
     });
     howl.seek(block.voiceStart / 1000);
     howl.play();
+    this.audioInstance = howl;
 
     this.store.setState(
       produce((state) => {
@@ -928,6 +935,9 @@ export class TrawApp {
 
   private stopPlay = () => {
     if (this.playInterval) cancelAnimationFrame(this.playInterval);
+    if (this.audioInstance) {
+      this.audioInstance.stop();
+    }
 
     this.store.setState(
       produce((state) => {
