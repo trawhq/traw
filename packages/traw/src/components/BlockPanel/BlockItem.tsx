@@ -9,10 +9,21 @@ export interface BlockItemProps {
   date: string | number;
   blockText: string;
   isVoiceBlock: boolean;
+  hideUserName?: boolean;
+  isPlaying?: boolean;
   handlePlayClick: (blockId: string) => void;
 }
 
-export const BlockItem = ({ userName, blockId, date, isVoiceBlock, blockText, handlePlayClick }: BlockItemProps) => {
+export const BlockItem = ({
+  hideUserName,
+  userName,
+  blockId,
+  date,
+  isVoiceBlock,
+  blockText,
+  isPlaying,
+  handlePlayClick,
+}: BlockItemProps) => {
   const dateStr = useMemo(() => {
     if (typeof date === 'string') {
       return date;
@@ -27,17 +38,21 @@ export const BlockItem = ({ userName, blockId, date, isVoiceBlock, blockText, ha
 
   return (
     <li className="bg-white w-full">
-      <div className="flex flex-1 flex-row items-center w-full grow gap-1">
-        <div className="flex relative">
-          <UserAvatar avatarUrl={undefined} userName={userName} size={15} />
+      {hideUserName ? null : (
+        <div className="flex flex-1 flex-row items-center w-full grow gap-1 mt-3 mb-1">
+          <div className="flex relative">
+            <UserAvatar avatarUrl={undefined} userName={userName} size={15} />
+          </div>
+          <div className="font-bold text-[13px] text-traw-grey-dark">{userName}</div>
+          <div className="text-traw-grey-100 text-[10px]">{dateStr}</div>
         </div>
-        <div className="font-bold text-[13px] text-traw-grey-dark">{userName}</div>
-        <div className="text-traw-grey-100 text-[10px]">{dateStr}</div>
-      </div>
+      )}
+
       <span
-        className={classNames('mt-2', 'text-xs', 'rounded-md', 'py-1', 'px-0.5', 'transition-colors', {
+        className={classNames('mt-2', 'text-sm', 'rounded-md', 'py-1', 'px-0.5', 'transition-colors', {
           'cursor-pointer': isVoiceBlock,
           'hover:bg-traw-grey-50': isVoiceBlock,
+          'bg-traw-purple-light': isPlaying,
         })}
         onClick={onClick}
       >

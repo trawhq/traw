@@ -870,11 +870,14 @@ export class TrawApp {
   };
 
   addBlocks = (blocks: TRBlock[]) => {
+    let fullTime = 0;
     this.store.setState(
       produce((state) => {
         blocks.forEach((block) => {
           state.blocks[block.id] = block;
+          fullTime += block.voiceEnd - block.voiceStart;
         });
+        state.player.fullTime = fullTime;
       }),
     );
   };

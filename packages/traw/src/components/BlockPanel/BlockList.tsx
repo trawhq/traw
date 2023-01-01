@@ -13,6 +13,7 @@ export default function BlockList({ handlePlayClick, onClickStartRecording, isRe
   const app = useTrawApp();
   const blocks = app.useStore((state: TrawSnapshot) => state.blocks);
   const document = app.useStore((state: TrawSnapshot) => state.document);
+  const targetBlockId = app.useStore((state: TrawSnapshot) => state.player.targetBlockId);
 
   const sortedBlocks = useMemo(() => {
     return Object.values(blocks).sort((a, b) => a.time - b.time);
@@ -21,20 +22,29 @@ export default function BlockList({ handlePlayClick, onClickStartRecording, isRe
   if (sortedBlocks.length === 0 && !isRecording) {
     return <EmptyBlockPanel onClickStartRecording={onClickStartRecording} documentId={document.id} />;
   }
+
+  let prevUserId = '';
+
   return (
     <div className="mt-4 flex-2 flex-auto w-full overflow-y-auto min-h-0 px-2">
-      <ul className="flex flex-col gap-4">
-        {sortedBlocks.map((block) => (
-          <BlockItem
-            key={block.id}
-            userName={'example user'}
-            date={block.time}
-            blockId={block.id}
-            blockText={block.text}
-            isVoiceBlock={block.voices.length > 0}
-            handlePlayClick={handlePlayClick}
-          />
-        ))}
+      <ul className="flex flex-col gap-1">
+        {sortedBlocks.map((block) => {
+          const isUserContinue = prevUserId === block.userId;
+          prevUserId = block.userId;
+          return (
+            <BlockItem
+              key={block.id}
+              hideUserName={isUserContinue}
+              userName={'example user'}
+              date={block.time}
+              blockId={block.id}
+              blockText={block.text}
+              isPlaying={targetBlockId === block.id}
+              isVoiceBlock={block.voices.length > 0}
+              handlePlayClick={handlePlayClick}
+            />
+          );
+        })}
       </ul>
     </div>
   );
