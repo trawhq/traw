@@ -1,4 +1,4 @@
-import { shapeUtils, TDDocument, TDStatus, TLDR } from '@tldraw/tldraw';
+import { TDDocument, TDStatus, TLDR } from '@tldraw/tldraw';
 import { useKeyboardShortcuts, useTrawApp } from 'hooks';
 import React, { useCallback, useEffect } from 'react';
 
@@ -10,6 +10,7 @@ import { useTldrawApp } from 'hooks/useTldrawApp';
 import { ErrorBoundary as _Errorboundary } from 'react-error-boundary';
 import { styled } from 'stitches.config';
 import { PlayModeType } from 'types';
+import { shapeUtils } from 'shapes';
 
 const ErrorBoundary = _Errorboundary as any;
 

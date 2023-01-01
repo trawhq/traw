@@ -508,27 +508,6 @@ export class TrawApp {
           }, {});
 
         const bindings = patch.document.pages[pageId]?.bindings;
-        // console.log(JSON.stringify(bindings), Object.values(tlDocument.pages[pageId]?.shapes));
-        // if (bindings) {
-        //   Object.values(bindings).forEach((binding) => {
-        //     if ((binding as any) === DELETE_ID) return;
-        //     if (binding) {
-        //       if (binding.toId) {
-        //         binding.toId =
-        //           tlDocument.pages[pageId]?.shapes[binding.toId] || (shapes[binding.toId] as any) !== DELETE_ID
-        //             ? binding.toId
-        //             : binding.id;
-        //       }
-        //       if (binding.fromId) {
-        //         binding.fromId =
-        //           tlDocument.pages[pageId]?.shapes[binding.fromId] || (shapes[binding.fromId] as any) !== DELETE_ID
-        //             ? binding.fromId
-        //             : binding.id;
-        //       }
-        //     }
-        //   });
-        // }
-        // console.log(bindings);
 
         records.push({
           type: command.id as ActionType,
