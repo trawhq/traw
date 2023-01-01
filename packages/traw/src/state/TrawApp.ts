@@ -143,7 +143,6 @@ export class TrawApp {
 
   constructor({ user, document, records = [] }: TrawAppOptions) {
     this.editorId = user.id;
-    console.log(this);
 
     const recordMap: Record<string, TRRecord> = {};
     records.forEach((record) => {
@@ -701,22 +700,38 @@ export class TrawApp {
                 `selected`,
               );
             }
-            console.log(this.convertDeleteToUndefined(data.shapes));
-            this.app.patchState({
-              document: {
-                pages: {
-                  [slideId]: {
-                    shapes: {
-                      ...this.convertDeleteToUndefined(data.shapes),
+            if (data.bindings) {
+              this.app.patchState({
+                document: {
+                  pages: {
+                    [slideId]: {
+                      shapes: {
+                        ...this.convertDeleteToUndefined(data.shapes),
+                      },
+                      bindings: data.bindings ? { ...this.convertDeleteToUndefined(data.bindings) } : undefined,
                     },
-                    bindings: data.bindings ? { ...this.convertDeleteToUndefined(data.bindings) } : undefined,
+                  },
+                  assets: {
+                    ...this.convertDeleteToUndefined(data.assets),
                   },
                 },
-                assets: {
-                  ...this.convertDeleteToUndefined(data.assets),
+              });
+            } else {
+              this.app.patchState({
+                document: {
+                  pages: {
+                    [slideId]: {
+                      shapes: {
+                        ...this.convertDeleteToUndefined(data.shapes),
+                      },
+                    },
+                  },
+                  assets: {
+                    ...this.convertDeleteToUndefined(data.assets),
+                  },
                 },
-              },
-            });
+              });
+            }
             break;
           }
         }
