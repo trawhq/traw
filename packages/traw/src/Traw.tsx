@@ -4,7 +4,7 @@ import { SlideListPanel } from 'components/SlideListPanel';
 import { ToolsPanel } from 'components/ToolsPanel';
 import { TopPanel } from 'components/TopPanel';
 import { TrawContext } from 'hooks';
-import React, { ReactNode, useCallback, useEffect } from 'react';
+import React, { ReactNode, useCallback } from 'react';
 import { TrawApp } from 'state';
 import { styled } from 'stitches.config';
 import { TrawDocument } from 'types';
@@ -19,14 +19,18 @@ export interface TrawProps {
   document?: TrawDocument;
   components?: {
     TopMenu?: ReactNode;
+    EmptyVoiceNote?: ReactNode;
     /**
      * The component to render for multiplayer cursors.
      */
     Cursor?: CursorComponent;
   };
+  functions?: {
+    handleChangeDocumentTitle?: (newValue: string) => void;
+  };
 }
 
-const Traw = ({ app, document, components }: TrawProps) => {
+const Traw = ({ app, document, components, functions }: TrawProps) => {
   // Create a new app when the component mounts.
   const [trawApp] = React.useState(
     app ??
@@ -49,17 +53,6 @@ const Traw = ({ app, document, components }: TrawProps) => {
     };
   }, [trawApp]);
 
-  const [isRecording, setIsRecording] = React.useState(false);
-  const startRecording = () => setIsRecording(true);
-
-  useEffect(() => {
-    if (isRecording) {
-      trawApp.startRecording();
-    } else {
-      trawApp.stopRecording();
-    }
-  }, [trawApp, isRecording]);
-
   const handlePlayClick = useCallback(
     (blockId?: string) => {
       if (blockId) {
@@ -77,9 +70,9 @@ const Traw = ({ app, document, components }: TrawProps) => {
       <div id="traw" data-testid="traw" className="flex flex-1 flex-col overflow-hidden ">
         <Editor components={components} readOnly={document ? !document.canEdit : false} />
         <StyledUI>
-          <HeaderPanel />
+          <HeaderPanel handleChangeTitle={functions?.handleChangeDocumentTitle} />
           <TopPanel Room={components?.TopMenu || <div />} />
-          <BlockPanel handlePlayClick={handlePlayClick} onClickStartRecording={startRecording} />
+          <BlockPanel handlePlayClick={handlePlayClick} components={{ EmptyVoiceNote: components?.EmptyVoiceNote }} />
 
           <SlideListPanel />
           <ToolsPanel />

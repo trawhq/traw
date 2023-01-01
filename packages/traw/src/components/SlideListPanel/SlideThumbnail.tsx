@@ -5,12 +5,14 @@ import { useTldrawApp } from 'hooks/useTldrawApp';
 import React, { useMemo } from 'react';
 import { convertCameraTRtoTD } from 'state';
 import { useTrawApp } from '../../hooks/useTrawApp';
+import { TRViewport } from 'types';
 
 interface SlideThumbnailProps {
   page: TDPage;
+  viewport: TRViewport;
 }
 
-const SlideThumbnail = ({ page }: SlideThumbnailProps) => {
+const SlideThumbnail = ({ page, viewport }: SlideThumbnailProps) => {
   const slideDomRef = React.useRef<HTMLDivElement>(null);
 
   const app = useTrawApp();
@@ -22,9 +24,9 @@ const SlideThumbnail = ({ page }: SlideThumbnailProps) => {
     return state.camera[state.user.id].cameras[page.id];
   });
   const tlCamera = useMemo(() => {
-    if (camera) return convertCameraTRtoTD(camera, { width: 105, height: 59 });
-    else return convertCameraTRtoTD(DEFAULT_CAMERA, { width: 105, height: 59 });
-  }, [camera]);
+    if (camera) return convertCameraTRtoTD(camera, viewport);
+    else return convertCameraTRtoTD(DEFAULT_CAMERA, viewport);
+  }, [camera, viewport]);
 
   const { settings, document } = state;
 

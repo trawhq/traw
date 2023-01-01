@@ -45,7 +45,7 @@ export const SlideListPanel = React.memo(function SlideListPanel() {
                   <DoubleArrowLeftIcon flipHorizontal className="text-traw-grey-100 transition-transform" />
                 )}
               </button>
-              <span className="text-traw-grey-dark ml-2">Pages</span>
+              <span className="text-traw-grey-dark ml-2 select-none">Pages</span>
               {panelOpen ? (
                 <button onClick={handleAddSlide} className="text-traw-grey ml-auto">
                   <PlusIcon />
@@ -64,7 +64,7 @@ export const SlideListPanel = React.memo(function SlideListPanel() {
                       page={page}
                       viewerCount={viewerCount}
                       selectState={page.id === currentPageId ? SlideListItemState.SELECTED : selectState}
-                      size="list"
+                      type="list"
                       handleClick={handleSlideClick}
                       setRef={(ref) => {
                         slideRef.current[page.id] = ref;

@@ -13,20 +13,42 @@ export enum SlideListItemState {
 interface SlideListItemProps {
   page: TDPage;
   index: number;
-  viewerCount: number;
-  selectState: SlideListItemState;
-  size: 'list';
+  type: 'list' | 'preview';
+  viewerCount?: number;
+  selectState?: SlideListItemState;
   setRef?: (ref: HTMLLIElement) => void;
-  handleClick: (slideId: string) => void;
+  handleClick?: (slideId: string) => void;
+  classnames?: string;
 }
 
-const slideSizes = {
-  list: 'w-[105px] sm:w-[105px]',
+const slidesViewport = {
+  list: {
+    width: 105,
+    height: 59,
+  },
+  preview: {
+    width: 375,
+    height: 210,
+  },
 };
 
-const SlideListItem = ({ page, index, viewerCount, selectState, size, setRef, handleClick }: SlideListItemProps) => {
+const slideSizes = {
+  list: `w-[${slidesViewport.list.width}px] `,
+  preview: `w-[${slidesViewport.preview.width}px] `,
+};
+
+export const SlideListItem = ({
+  page,
+  index,
+  viewerCount,
+  selectState = SlideListItemState.DEFAULT,
+  type,
+  setRef,
+  handleClick,
+  classnames,
+}: SlideListItemProps) => {
   const handleSelectSlide = () => {
-    handleClick(page.id);
+    handleClick && handleClick(page.id);
   };
 
   return (
@@ -36,7 +58,7 @@ const SlideListItem = ({ page, index, viewerCount, selectState, size, setRef, ha
       }}
       key={page.id}
       onClick={handleSelectSlide}
-      className={classNames(`flex aspect-video  relative cursor-pointer rounded-xl ${slideSizes[size]}`)}
+      className={classNames(`flex aspect-video  relative cursor-pointer rounded-xl ${slideSizes[type]} ${classnames}}`)}
     >
       <div
         className={classNames(
@@ -45,25 +67,28 @@ const SlideListItem = ({ page, index, viewerCount, selectState, size, setRef, ha
             'outline-transparent ': selectState === SlideListItemState.DEFAULT,
             'outline-traw-purple ': selectState === SlideListItemState.SELECTED,
             'outline-traw-grey ': selectState === SlideListItemState.TARGETED,
+            'outline-traw-sky': type === 'preview',
           },
         )}
       >
-        <div
-          className={classNames(
-            'flex items-center justify-center ml-auto w-10 rounded-bl-xl rounded-tr-xl text-right text-[10px] py-0.5 gap-1',
-            {
-              'bg-traw-purple text-white': selectState === SlideListItemState.SELECTED,
-              'bg-traw-grey-50 text-traw-grey-100 ':
-                selectState === SlideListItemState.DEFAULT || selectState === SlideListItemState.TARGETED,
-            },
-          )}
-        >
-          <SvgViewer className="fill-current h-3 w-4" />
-          {viewerCount}
-        </div>
-        <div className="ml-auto text-[10px] text-traw-grey-100 pr-2 pb-1">{index}</div>
+        {type === 'list' && (
+          <div
+            className={classNames(
+              'flex items-center justify-center ml-auto w-10 rounded-bl-xl rounded-tr-xl text-right text-[10px] py-0.5 gap-1 select-none',
+              {
+                'bg-traw-purple text-white': selectState === SlideListItemState.SELECTED,
+                'bg-traw-grey-50 text-traw-grey-100 ':
+                  selectState === SlideListItemState.DEFAULT || selectState === SlideListItemState.TARGETED,
+              },
+            )}
+          >
+            <SvgViewer className="fill-current h-3 w-4 " />
+            {viewerCount}
+          </div>
+        )}
+        {type === 'list' && <div className="ml-auto text-[10px] text-traw-grey-100 pr-2 pb-1 select-none">{index}</div>}
       </div>
-      <SlideThumbnail page={page} />
+      <SlideThumbnail page={page} viewport={slidesViewport[type]} />
     </li>
   );
 };

@@ -96,6 +96,9 @@ export type TrawSnapshot = {
   };
   document: TrawDocument;
   user: TrawUser;
+  users: {
+    [userId: string]: TrawUser;
+  };
   // participants
 };
 
