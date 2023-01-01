@@ -71,7 +71,7 @@ export const BlockItem = ({
           <div className="flex relative">
             {user && <UserAvatar avatarUrl={user.profileUrl} userName={user.name} size={15} />}
           </div>
-          <div className="font-bold text-[13px] text-traw-grey-dark">{user.name}</div>
+          {user && <div className="font-bold text-[13px] text-traw-grey-dark">{user.name}</div>}
           <div className="text-traw-grey-100 text-[10px]">{dateStr}</div>
         </div>
       )}
