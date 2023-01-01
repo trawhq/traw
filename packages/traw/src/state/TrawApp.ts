@@ -709,6 +709,7 @@ export class TrawApp {
                     shapes: {
                       ...this.convertDeleteToUndefined(data.shapes),
                     },
+                    bindings: data.bindings ? { ...this.convertDeleteToUndefined(data.bindings) } : undefined,
                   },
                 },
                 assets: {
@@ -716,20 +717,7 @@ export class TrawApp {
                 },
               },
             });
-            if (data.bindings) {
-              this.app.patchState({
-                document: {
-                  pages: {
-                    [slideId]: {
-                      bindings: {
-                        ...this.convertDeleteToUndefined(data.bindings),
-                      },
-                    },
-                  },
-                },
-              });
-              break;
-            }
+            break;
           }
         }
       });
