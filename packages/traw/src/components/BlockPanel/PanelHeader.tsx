@@ -7,17 +7,25 @@ export interface PanelHeaderProps {
   isRecording?: boolean;
   isTalking: boolean;
   panelOpen: boolean;
+  totalTime: number;
   togglePanel?: () => void;
 }
 
-export const PanelHeader = ({ isRecording, isTalking, panelOpen, togglePanel }: PanelHeaderProps) => {
+const formatTime = (time: number) => {
+  const date = new Date(0);
+  date.setSeconds(time / 1000); // specify value for SECONDS here
+  const timeString = date.toISOString().substring(11, 19);
+  return timeString;
+};
+
+export const PanelHeader = ({ isRecording, isTalking, panelOpen, togglePanel, totalTime }: PanelHeaderProps) => {
   return (
     <header className="flex mt-2 w-full gap-2 pl-2 items-center">
       {!isRecording && (
         <>
           <div className="text-traw-grey-dark text-[13px] font-bold">Voice note</div>
           {/* Todo. total record time */}
-          <div className="text-traw-grey-100 font-[12px]">00:00:00</div>
+          <div className="text-traw-grey-100 font-[12px]">{formatTime(totalTime)}</div>
           <button onClick={togglePanel} className=" ml-auto">
             {panelOpen ? (
               <DoubleArrowLeftIcon flipHorizontal className="text-traw-grey-100 transition-transform" />

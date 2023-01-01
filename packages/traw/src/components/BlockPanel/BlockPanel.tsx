@@ -13,6 +13,7 @@ export interface BlockPanelProps {
 export const BlockPanel = ({ handlePlayClick, onClickStartRecording }: BlockPanelProps) => {
   const app = useTrawApp();
   const panelOpen = app.useStore((state) => state.editor.isPanelOpen);
+  const totalTime = app.useStore((state) => state.player.totalTime);
 
   const { isRecording, isTalking, recognizedText } = app.useStore((state) => state.recording);
 
@@ -24,6 +25,7 @@ export const BlockPanel = ({ handlePlayClick, onClickStartRecording }: BlockPane
             isRecording={isRecording}
             isTalking={isTalking}
             panelOpen={panelOpen}
+            totalTime={totalTime}
             togglePanel={app.togglePanel}
           />
           {panelOpen && (
