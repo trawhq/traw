@@ -1,7 +1,7 @@
 import { TDPage } from '@tldraw/tldraw';
 import classNames from 'classnames';
 import React from 'react';
-import SvgViewer from '../../icons/viewer';
+import SlideItemViewerCounter from './SlideItemViewerCounter';
 import SlideThumbnail from './SlideThumbnail';
 
 export enum SlideListItemState {
@@ -40,7 +40,7 @@ const slideSizes = {
 export const SlideListItem = ({
   page,
   index,
-  viewerCount,
+  viewerCount = 0,
   selectState = SlideListItemState.DEFAULT,
   type,
   setRef,
@@ -71,20 +71,8 @@ export const SlideListItem = ({
           },
         )}
       >
-        {type === 'list' && (
-          <div
-            className={classNames(
-              'flex items-center justify-center ml-auto w-10 rounded-bl-xl rounded-tr-xl text-right text-[10px] py-0.5 gap-1 select-none',
-              {
-                'bg-traw-purple text-white': selectState === SlideListItemState.SELECTED,
-                'bg-traw-grey-50 text-traw-grey-100 ':
-                  selectState === SlideListItemState.DEFAULT || selectState === SlideListItemState.TARGETED,
-              },
-            )}
-          >
-            <SvgViewer className="fill-current h-3 w-4 " />
-            {viewerCount}
-          </div>
+        {type === 'list' && viewerCount > 0 && (
+          <SlideItemViewerCounter viewerCount={viewerCount} selectState={selectState} />
         )}
         {type === 'list' && <div className="ml-auto text-[10px] text-traw-grey-100 pr-2 pb-1 select-none">{index}</div>}
       </div>

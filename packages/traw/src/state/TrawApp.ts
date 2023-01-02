@@ -6,6 +6,7 @@ import {
   AnimationType,
   PlayModeType,
   TDCamera,
+  TrawRoomUser,
   TrawSnapshot,
   TrawUser,
   TRBlock,
@@ -917,14 +918,30 @@ export class TrawApp {
         },
       },
     });
+
+    this.store.setState(
+      produce((state) => {
+        state.room = {
+          id: roomId,
+        };
+      }),
+    );
   };
 
-  public readonly updateOthers = (others: TDUser[]) => {
+  public readonly updateOthers = (tdOthers: TDUser[], trawOthers: TrawRoomUser[]) => {
     this.app.patchState({
       room: {
-        users: Object.fromEntries(others.map((user) => [user.id, user])),
+        users: Object.fromEntries(tdOthers.map((user) => [user.id, user])),
       },
     });
+
+    this.store.setState(
+      produce((state) => {
+        state.room = {
+          others: Object.fromEntries(trawOthers.map((user) => [user.id, { page: user.page }])),
+        };
+      }),
+    );
   };
 
   createBlock = (block: TRBlock) => {

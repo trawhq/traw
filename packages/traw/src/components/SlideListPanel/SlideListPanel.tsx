@@ -5,6 +5,7 @@ import { useTldrawApp } from 'hooks/useTldrawApp';
 import { DoubleArrowLeftIcon } from 'icons/DoubleArrowLeft';
 import * as React from 'react';
 import { styled } from 'stitches.config';
+import { TrawRoomUser } from 'types';
 import { breakpoints } from 'utils/breakpoints';
 
 export const SlideListPanel = React.memo(function SlideListPanel() {
@@ -18,8 +19,8 @@ export const SlideListPanel = React.memo(function SlideListPanel() {
   const { currentPageId } = appState;
   const pages = document.pages;
 
-  const viewerCount = 1;
-  const selectState = SlideListItemState.DEFAULT;
+  const trawState = app.useStore();
+  const others = trawState.room?.others || null;
 
   const currentPageIndex = Object.keys(pages).indexOf(currentPageId) + 1;
 
@@ -56,22 +57,27 @@ export const SlideListPanel = React.memo(function SlideListPanel() {
             </StyledPanelHeader>
             {panelOpen && (
               <StyledSlideList>
-                {Object.values(pages).map((page, index) =>
-                  page ? (
+                {Object.values(pages).map((page, index) => {
+                  const selectState =
+                    page.id === currentPageId ? SlideListItemState.SELECTED : SlideListItemState.DEFAULT;
+                  const othersInThisPage = others
+                    ? Object.values(others).filter((other: TrawRoomUser) => other.page === page.id)
+                    : [];
+                  return (
                     <SlideListItem
                       key={page.id}
                       index={index + 1}
                       page={page}
-                      viewerCount={viewerCount}
-                      selectState={page.id === currentPageId ? SlideListItemState.SELECTED : selectState}
+                      viewerCount={othersInThisPage.length + (selectState === SlideListItemState.SELECTED ? 1 : 0)}
+                      selectState={selectState}
                       type="list"
                       handleClick={handleSlideClick}
                       setRef={(ref) => {
                         slideRef.current[page.id] = ref;
                       }}
                     />
-                  ) : null,
-                )}
+                  );
+                })}
               </StyledSlideList>
             )}
           </StyledPanel>
