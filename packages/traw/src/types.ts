@@ -59,6 +59,10 @@ export enum PlayModeType {
   STOP = 'STOP',
 }
 
+export enum AnimationType {
+  DRAW = 'DRAW',
+}
+
 export type TrawSnapshot = {
   player: {
     mode: PlayModeType;
@@ -72,6 +76,15 @@ export type TrawSnapshot = {
     volume: number;
     totalTime: number;
     isDone: boolean;
+    animations: {
+      [shapeId: string]: {
+        type: AnimationType;
+        start: number;
+        end: number;
+        page: string;
+        points?: [number, number, number][];
+      };
+    };
   };
   editor: {
     isPanelOpen: boolean;

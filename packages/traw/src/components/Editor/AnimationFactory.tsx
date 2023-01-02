@@ -9,12 +9,15 @@ const Wrapper = styled('div', {
         '& .tl-layer': {
           transition: 'all 0.5s ease-out',
         },
-      },
-      isNotPlay: {
-        '& .tl-layer': {
-          transition: 'none',
+        '& .tl-positioned': {
+          transition: 'all 0.3s ease-out',
+        },
+        '& .tl-inner-div div': {
+          transition: 'all 0.5s ease-out',
+          animation: 'fadeIn 0.5s',
         },
       },
+      isNotPlay: {},
     },
   },
 });
