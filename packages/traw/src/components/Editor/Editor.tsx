@@ -12,6 +12,7 @@ import { styled } from 'stitches.config';
 import { PlayModeType } from 'types';
 import { ContextMenu } from 'components/ContextMenu';
 import TlDrawLoading from 'components/Loading/TldrawLoading';
+import AnimationFactory from './AnimationFactory';
 
 const ErrorBoundary = _Errorboundary as any;
 
@@ -220,9 +221,6 @@ interface InnerTldrawProps {
 }
 
 const InnerTldraw = React.memo(function InnerTldraw({ id, autofocus, components, hideCursors }: InnerTldrawProps) {
-  const trawApp = useTrawApp();
-  const { mode } = trawApp.useStore().player;
-  const isPlay = mode === PlayModeType.PLAYING;
   const app = useTldrawApp();
   const rWrapper = React.useRef<HTMLDivElement>(null);
 
@@ -271,7 +269,7 @@ const InnerTldraw = React.memo(function InnerTldraw({ id, autofocus, components,
 
   const hideCloneHandles = isInSession || !isSelecting || pageState.camera.zoom < 0.2;
   return (
-    <StyledLayout ref={rWrapper} tabIndex={-0} playMode={isPlay ? 'isPlay' : 'isNotPlay'}>
+    <StyledLayout ref={rWrapper} tabIndex={-0}>
       {/* <AlertDialog container={dialogContainer} /> */}
       <TlDrawLoading />
       <OneOff focusableRef={rWrapper} autofocus={autofocus} />
@@ -385,21 +383,6 @@ const StyledLayout = styled('div', {
     backgroundColor: '$canvas',
   },
 
-  variants: {
-    playMode: {
-      isPlay: {
-        '& .tl-layer': {
-          transition: 'all 0.5s ease-out',
-        },
-      },
-      isNotPlay: {
-        '& .tl-layer': {
-          transition: 'none',
-        },
-      },
-    },
-  },
-
   '& input, textarea, button, select, label, button': {
     webkitTouchCallout: 'none',
     webkitUserSelect: 'none',
@@ -464,14 +447,16 @@ export const Editor = ({ components, readOnly = false }: EditorProps) => {
   return (
     <div id="traw-editor" className="relative w-full h-full" ref={slideDomRef}>
       <div className="absolute left-0 right-0 top-0 bottom-0 w-full h-full">
-        <Tldraw
-          showMultiplayerMenu={false}
-          darkMode={false}
-          showMenu={false}
-          showPages={false}
-          components={components}
-          readOnly={false}
-        />
+        <AnimationFactory>
+          <Tldraw
+            showMultiplayerMenu={false}
+            darkMode={false}
+            showMenu={false}
+            showPages={false}
+            components={components}
+            readOnly={false}
+          />
+        </AnimationFactory>
       </div>
       {(isPlayMode || readOnly) && <div className="absolute left-0 right-0 top-0 bottom-0 w-full h-full z-[1]"></div>}
     </div>

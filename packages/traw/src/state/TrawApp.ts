@@ -575,12 +575,12 @@ export class TrawApp {
 
   applyRecordsFromFirst = () => {
     const records = Object.values(this.store.getState().records).sort((a, b) => a.start - b.start);
+
     this.applyRecords(records);
   };
 
   applyRecords = (records: TRRecord[]) => {
     let isCameraChanged = false;
-
     records
       .sort((a, b) => a.start - b.start)
       .forEach((record) => {
