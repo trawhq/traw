@@ -716,6 +716,7 @@ export class TrawApp {
                         start: Date.now(),
                         end: Date.now() + (record.end - record.start),
                         points: record.data.shapes[shapeId].points,
+                        point: record.data.shapes[shapeId].point,
                         page: record.slideId,
                       },
                     };
@@ -779,13 +780,21 @@ export class TrawApp {
       const progress = (Date.now() - animation.start) / (animation.end - animation.start);
       if (progress < 1) {
         if (animation.type === AnimationType.DRAW) {
+          const subPoints = animation.points?.slice(0, Math.max(animation.points.length * progress, 1));
+          let minY = Infinity;
+          let minX = Infinity;
+          subPoints?.forEach(([x, y]) => {
+            if (x < minX) minX = x;
+            if (y < minY) minY = y;
+          });
           this.app.patchState({
             document: {
               pages: {
                 [animation.page]: {
                   shapes: {
                     [id]: {
-                      points: animation.points?.slice(0, animation.points.length * progress),
+                      points: subPoints,
+                      point: [animation.point[0] - minX, animation.point[1] - minY],
                     },
                   },
                 },

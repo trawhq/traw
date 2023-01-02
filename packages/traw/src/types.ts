@@ -83,6 +83,7 @@ export type TrawSnapshot = {
         end: number;
         page: string;
         points?: [number, number, number][];
+        point: [number, number];
       };
     };
   };
