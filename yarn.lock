@@ -1225,6 +1225,31 @@
     "@floating-ui/dom" "^0.5.3"
     use-isomorphic-layout-effect "^1.1.1"
 
+"@fontsource/caveat-brush@^4.5.9":
+  version "4.5.9"
+  resolved "https://registry.yarnpkg.com/@fontsource/caveat-brush/-/caveat-brush-4.5.9.tgz#5e2a23cc9344a911e0974a489dcc7976047b631e"
+  integrity sha512-H4uDBRSmTYX0Pman53VO8IP8JVnGd2wD4YyXHY0KTQX6jE0rs+UHuzraKGF8WTqBO7854VRCq09sPDhvLvqicQ==
+
+"@fontsource/crimson-pro@^4.5.10":
+  version "4.5.10"
+  resolved "https://registry.yarnpkg.com/@fontsource/crimson-pro/-/crimson-pro-4.5.10.tgz#d23fbead2db6eae00faf99de92bce41fa2f0873c"
+  integrity sha512-4L7B+woKIWiwOQrCvvpAQeEob3xoq5fVLTyt0YhXVafy2KWBTCcFVo/Y9n0UpDtGso9jN8pMo3SrYa3V6IayVw==
+
+"@fontsource/recursive@^4.5.11":
+  version "4.5.11"
+  resolved "https://registry.yarnpkg.com/@fontsource/recursive/-/recursive-4.5.11.tgz#adbdcca28de51520ea329aa3e2e174ceaf1a0cf3"
+  integrity sha512-pAb+Qk1J0BysC6NTaaGDnhoorT4F8ZZKScWRUfqLpXP/wqH/lp9ccUcTxpS/pMawvmjZyNoKvQucvOvZNscUgw==
+
+"@fontsource/source-code-pro@^4.5.12":
+  version "4.5.12"
+  resolved "https://registry.yarnpkg.com/@fontsource/source-code-pro/-/source-code-pro-4.5.12.tgz#4ca4dffb485f3f2768dd13157cb09a9b134a9cd1"
+  integrity sha512-6r1dykX7SH1Orm7xUh4sA8pjM1uNPKo9fV+y9/wxS+y/fwN+sMf6b1jHDUTmfEtw1OxlTaHGrr2I7dGeNqxdPA==
+
+"@fontsource/source-sans-pro@^4.5.11":
+  version "4.5.11"
+  resolved "https://registry.yarnpkg.com/@fontsource/source-sans-pro/-/source-sans-pro-4.5.11.tgz#06b3f08ef1a5250d78c8198e5a0482b5d87a4d52"
+  integrity sha512-f7iw44q1EjBv3MNcHCGAgrW/QVyweaEouFsJzykPhTOGnZFSwFJRISToXornOmuAy7xUUGiVdqOLiykgZoYB8A==
+
 "@formatjs/ecma402-abstract@1.14.3":
   version "1.14.3"
   resolved "https://registry.yarnpkg.com/@formatjs/ecma402-abstract/-/ecma402-abstract-1.14.3.tgz#6428f243538a11126180d121ce8d4b2f17465738"
@@ -3190,10 +3215,10 @@
     "@testing-library/dom" "^8.5.0"
     "@types/react-dom" "^18.0.0"
 
-"@tldraw/core@^1.20.2":
-  version "1.20.2"
-  resolved "https://registry.yarnpkg.com/@tldraw/core/-/core-1.20.2.tgz#c6bf0ac0310342c2d6d04ff236c88056a3982012"
-  integrity sha512-/2iwKm2cNofOleI2xVdgnRtKnZjxKpsIRga+DXlxR/4fa0gNYF//HP+kGD6clE7g5j9JsfiR+S3DV5wClGZPog==
+"@tldraw/core@^1.20.3":
+  version "1.20.3"
+  resolved "https://registry.yarnpkg.com/@tldraw/core/-/core-1.20.3.tgz#dac5b478606cce541de941e87221de90777dfcfe"
+  integrity sha512-R/HqtQOg8yedcN70m75ekdm2u6dAHQpg3uxmzd7/TsdUnbfZc5UMp3TakYlTD6JwSSRV0n2huI4AD8D/NJ5jEw==
   dependencies:
     "@tldraw/intersect" "^1.8.0"
     "@tldraw/vec" "^1.8.0"
@@ -3207,11 +3232,16 @@
   dependencies:
     "@tldraw/vec" "^1.8.0"
 
-"@tldraw/tldraw@^1.26.3":
-  version "1.26.3"
-  resolved "https://registry.yarnpkg.com/@tldraw/tldraw/-/tldraw-1.26.3.tgz#c26b1f2787e2e5e0528e6fe1804d0384e065646a"
-  integrity sha512-u8FfU3Q84y9E0PFLtw857bkmtlos4+/SSta9IrKQugrqVLBWzyixa2Wfk4e8h+Fr3CLCPa7uaBnlvT3Awr6dDQ==
+"@tldraw/tldraw@^1.26.4":
+  version "1.26.4"
+  resolved "https://registry.yarnpkg.com/@tldraw/tldraw/-/tldraw-1.26.4.tgz#c7cfee06adfe58a82c1fe3a1c1720c998c9b5dda"
+  integrity sha512-hD1lyM+TvaWkAtDKRXHu3Vt2a7OhJOlyEeaNoe0Nhgxb8BbrcdS8sTPKYL4CWjKmdFjYJ2ZfPlaiF2Dzvwk3JA==
   dependencies:
+    "@fontsource/caveat-brush" "^4.5.9"
+    "@fontsource/crimson-pro" "^4.5.10"
+    "@fontsource/recursive" "^4.5.11"
+    "@fontsource/source-code-pro" "^4.5.12"
+    "@fontsource/source-sans-pro" "^4.5.11"
     "@radix-ui/react-alert-dialog" "^1.0.0"
     "@radix-ui/react-context-menu" "^1.0.0"
     "@radix-ui/react-dialog" "^1.0.0"
@@ -3220,7 +3250,7 @@
     "@radix-ui/react-popover" "^1.0.0"
     "@radix-ui/react-tooltip" "^1.0.0"
     "@stitches/react" "^1.2.8"
-    "@tldraw/core" "^1.20.2"
+    "@tldraw/core" "^1.20.3"
     "@tldraw/intersect" "^1.8.0"
     "@tldraw/vec" "^1.8.0"
     browser-fs-access "^0.31.0"
