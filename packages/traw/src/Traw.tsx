@@ -11,6 +11,11 @@ import { TrawDocument } from 'types';
 import { TEST_DOCUMENT_1, TEST_USER_1 } from 'utils/testUtil';
 import { BlockPanel } from './components';
 import './index.css';
+import '@fontsource/caveat-brush';
+import '@fontsource/crimson-pro';
+import '@fontsource/recursive';
+import '@fontsource/source-code-pro';
+import '@fontsource/source-sans-pro';
 
 import { CursorComponent } from '@tldraw/core';
 
