@@ -692,21 +692,20 @@ export class TrawApp {
             if (this.app.selectedIds) {
               // deselect deleted shapes
               const nextIds = this.app.selectedIds.filter((id) => record.data.shapes[id] !== DELETE_ID);
-              this.app.patchState(
-                {
-                  appState: {
-                    activeTool: 'select',
-                  },
-                  document: {
-                    pageStates: {
-                      [this.app.currentPageId]: {
-                        selectedIds: nextIds,
+              if (this.app.selectedIds.length !== nextIds.length) {
+                this.app.patchState(
+                  {
+                    document: {
+                      pageStates: {
+                        [this.app.currentPageId]: {
+                          selectedIds: nextIds,
+                        },
                       },
                     },
                   },
-                },
-                `selected`,
-              );
+                  `selected`,
+                );
+              }
             }
 
             if (animation && record.type === 'create_draw') {
