@@ -130,8 +130,10 @@ export class TrawRecorder {
   };
 
   private _onSilence = () => {
-    this._trawVoiceBlockGenerator.createBlock();
-    this._trawVoiceRecorder.splitVoiceChunk();
+    const isCreated = this._trawVoiceBlockGenerator.createBlock();
+    if (isCreated) {
+      this._trawVoiceRecorder.splitVoiceChunk();
+    }
   };
 
   private _onRecognized = (action: 'add' | 'update', result: SpeechRecognitionResult) => {

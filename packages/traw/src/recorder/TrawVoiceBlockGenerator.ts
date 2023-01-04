@@ -24,6 +24,12 @@ export interface TrawVoiceBlockGeneratorOptions {
   voiceStartAdjustment?: number;
 
   /**
+   * When the voice duration is less than the given value in milliseconds without recognized text, the voice is discarded
+   * @default 3500
+   */
+  emptyBlockThreshold?: number;
+
+  /**
    * Called when a creating block is edited (text is changed)
    */
   onCreatingBlockUpdated?: onCreatingBlockUpdatedHandler;
@@ -51,6 +57,7 @@ export class TrawVoiceBlockGenerator {
    * @private
    */
   private _blockStartedAt: number;
+
   /**
    * Timestamp of the meaningful block started when the user is talking
    * @private
@@ -69,6 +76,12 @@ export class TrawVoiceBlockGenerator {
    */
   private _voiceStartAdjustment: number;
 
+  /**
+   * When the voice duration is less than the given value in milliseconds without recognized text, the voice is discarded
+   * @private
+   */
+  private _emptyBlockThreshold: number;
+
   /*
    * Public callbacks
    */
@@ -78,11 +91,13 @@ export class TrawVoiceBlockGenerator {
 
   constructor({
     voiceStartAdjustment = 500,
+    emptyBlockThreshold = 3500,
     onCreatingBlockUpdated,
     onBlockCreated,
     onVoiceCreated,
   }: TrawVoiceBlockGeneratorOptions) {
     this._voiceStartAdjustment = voiceStartAdjustment;
+    this._emptyBlockThreshold = emptyBlockThreshold;
     this._blockIdsQueue = [];
     this._blockStartedAt = 0;
     this._speakingStartedAt = 0;
@@ -123,15 +138,28 @@ export class TrawVoiceBlockGenerator {
     }
   };
 
-  public readonly createBlock = () => {
+  /**
+   * Create a block
+   * @returns {boolean} true if a block is created, false if not
+   */
+  public readonly createBlock = (): boolean => {
+    const now = Date.now();
     const blockId = nanoid();
     const time = this._speakingStartedAt;
     const text = this._recognitions
       .map((r) => r.text.trim())
       .join(' ')
       .trim();
+
     const voiceStart = Math.max(this._speakingStartedAt - this._blockStartedAt - this._voiceStartAdjustment, 0);
-    const voiceEnd = Date.now() - this._blockStartedAt;
+    const voiceEnd = now - this._blockStartedAt;
+    const duration = voiceEnd - voiceStart;
+
+    if (duration < this._emptyBlockThreshold && text.length === 0) {
+      // Discard empty & short block
+      this._speakingStartedAt = 0;
+      return false;
+    }
 
     this.onBlockCreated?.({
       blockId,
@@ -148,8 +176,14 @@ export class TrawVoiceBlockGenerator {
     this._recognitions = [];
 
     this.onCreatingBlockUpdated?.('');
+    return true;
   };
 
+  /**
+   * Attach a voice file to the last block
+   * @param file
+   * @param ext
+   */
   public readonly createBlockVoice = (file: File, ext: string) => {
     const blockId = this._blockIdsQueue.shift();
     if (!blockId) {
