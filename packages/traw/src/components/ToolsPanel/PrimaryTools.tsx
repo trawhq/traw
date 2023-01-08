@@ -15,6 +15,7 @@ import { ShapesMenu } from './ShapesMenu';
 import { StyleMenu } from './StyleMenu';
 import { ActionButton } from './ActionButton';
 import useDeviceDetect from 'hooks/useDeviceDetect';
+import { useTrawApp } from 'hooks';
 
 const activeToolSelector = (s: TDSnapshot) => s.appState.activeTool;
 const toolLockedSelector = (s: TDSnapshot) => s.appState.isToolLocked;
@@ -23,6 +24,7 @@ const dockPositionState = (s: TDSnapshot) => s.settings.dockPosition;
 export const PrimaryTools = React.memo(function PrimaryTools() {
   const { isBrowser } = useDeviceDetect();
 
+  const trawApp = useTrawApp();
   const app = useTldrawApp();
 
   const activeTool = app.useStore(activeToolSelector);
@@ -55,8 +57,8 @@ export const PrimaryTools = React.memo(function PrimaryTools() {
   // }, [app]);
 
   const uploadMedias = React.useCallback(async () => {
-    app.openAsset();
-  }, [app]);
+    trawApp.openAsset();
+  }, [trawApp]);
 
   const undo = React.useCallback(() => {
     app.undo();

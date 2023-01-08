@@ -149,6 +149,16 @@ export class TrawApp {
    */
   public onAssetCreate?: (app: TldrawApp, file: File, id: string) => Promise<string | false>;
 
+  public requestMedia: ((app: TldrawApp) => void) | undefined;
+
+  openAsset = () => {
+    if (this.requestMedia) {
+      this.requestMedia(this.app);
+    } else {
+      this.app.openAsset();
+    }
+  };
+
   public requestUser?: (id: string) => Promise<TrawUser | undefined>;
 
   constructor({ user, document, records = [], speechRecognitionLanguage = 'ko-KR', playerOptions }: TrawAppOptions) {
