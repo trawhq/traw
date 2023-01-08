@@ -14,6 +14,7 @@ import {
   TRBlockType,
   TRBlockVoice,
   TRCamera,
+  TREditorPadding,
   TRRecord,
   TRViewport,
 } from 'types';
@@ -30,47 +31,49 @@ import { isChrome } from 'utils/common';
 import create, { UseBoundStore } from 'zustand';
 import { TrawAppOptions } from './TrawAppOptions';
 
-export const convertCameraTRtoTD = (camera: TRCamera, viewport: TRViewport): TDCamera => {
-  const ratio = viewport.width / viewport.height;
+export const convertCameraTRtoTD = (camera: TRCamera, viewport: TRViewport, padding?: TREditorPadding): TDCamera => {
+  const { right } = padding || { right: 0 };
+  const ratio = (viewport.width - right) / viewport.height;
   if (ratio > SLIDE_RATIO) {
     // wider than slide
     const absoluteHeight = SLIDE_HEIGHT / camera.zoom;
     const zoom = viewport.height / absoluteHeight;
     return {
-      point: [-camera.center.x + viewport.width / zoom / 2, -camera.center.y + viewport.height / zoom / 2],
+      point: [-camera.center.x + (viewport.width - right) / zoom / 2, -camera.center.y + viewport.height / zoom / 2],
       zoom,
     };
   } else {
     // taller than slide
     const absoluteWidth = SLIDE_WIDTH / camera.zoom;
-    const zoom = viewport.width / absoluteWidth;
+    const zoom = (viewport.width - right) / absoluteWidth;
     return {
-      point: [-camera.center.x + viewport.width / zoom / 2, -camera.center.y + viewport.height / zoom / 2],
+      point: [-camera.center.x + (viewport.width - right) / zoom / 2, -camera.center.y + viewport.height / zoom / 2],
       zoom: zoom,
     };
   }
 };
 
-export const convertCameraTDtoTR = (camera: TDCamera, viewport: TRViewport): TRCamera => {
-  const ratio = viewport.width / viewport.height;
+export const convertCameraTDtoTR = (camera: TDCamera, viewport: TRViewport, padding?: TREditorPadding): TRCamera => {
+  const { right } = padding || { right: 0 };
+  const ratio = (viewport.width - right) / viewport.height;
   if (ratio > SLIDE_RATIO) {
     // wider than slide
     const absoluteHeight = viewport.height / camera.zoom;
     const zoom = SLIDE_HEIGHT / absoluteHeight;
     return {
       center: {
-        x: -camera.point[0] + viewport.width / camera.zoom / 2,
+        x: -camera.point[0] + (viewport.width - right) / camera.zoom / 2,
         y: -camera.point[1] + viewport.height / camera.zoom / 2,
       },
       zoom,
     };
   } else {
     // taller than slide
-    const absoluteWidth = viewport.width / camera.zoom;
+    const absoluteWidth = (viewport.width - right) / camera.zoom;
     const zoom = SLIDE_WIDTH / absoluteWidth;
     return {
       center: {
-        x: -camera.point[0] + viewport.width / camera.zoom / 2,
+        x: -camera.point[0] + (viewport.width - right) / camera.zoom / 2,
         y: -camera.point[1] + viewport.height / camera.zoom / 2,
       },
       zoom: zoom,
@@ -159,6 +162,8 @@ export class TrawApp {
     records.forEach((record) => {
       recordMap[record.id] = record;
     });
+
+    const isPanelOpen = !playerOptions?.isPlayerMode;
     this._state = {
       player: {
         mode,
@@ -173,7 +178,10 @@ export class TrawApp {
         animations: {},
       },
       editor: {
-        isPanelOpen: !playerOptions?.isPlayerMode,
+        isPanelOpen,
+        padding: {
+          right: isPanelOpen ? 300 : 0,
+        },
       },
       viewport: {
         width: 0,
@@ -341,6 +349,7 @@ export class TrawApp {
       return {
         ...state,
         viewport: {
+          ...state.viewport,
           width,
           height,
         },
@@ -350,12 +359,14 @@ export class TrawApp {
   };
 
   syncCamera = () => {
-    const { viewport, camera, player } = this.store.getState();
+    const { viewport, camera, player, editor } = this.store.getState();
 
     const { playAs } = player;
     const targetUserId = playAs || this.editorId;
     const currentPageId = camera[targetUserId].targetSlideId;
     if (!currentPageId) return;
+
+    const { padding } = editor;
 
     if (currentPageId !== this.app.appState.currentPageId) {
       this.app.patchState({
@@ -368,7 +379,7 @@ export class TrawApp {
     const trCamera = camera[targetUserId].cameras[currentPageId];
     if (!trCamera) return;
 
-    const tdCamera = convertCameraTRtoTD(trCamera, viewport);
+    const tdCamera = convertCameraTRtoTD(trCamera, viewport, padding);
     this.app.setCamera(tdCamera.point, tdCamera.zoom, 'sync_camera');
   };
 
@@ -379,7 +390,11 @@ export class TrawApp {
 
   handleCameraChange = (camera: TDCamera) => {
     if (this.store.getState().viewport.width === 0) return;
-    const trawCamera = convertCameraTDtoTR(camera, this.store.getState().viewport);
+    const trawCamera = convertCameraTDtoTR(
+      camera,
+      this.store.getState().viewport,
+      this.store.getState().editor.padding,
+    );
     const currentPageId = this.app.appState.currentPageId;
 
     this.store.setState(
@@ -1192,9 +1207,17 @@ export class TrawApp {
   togglePanel = () => {
     this.store.setState(
       produce((state) => {
-        state.editor.isPanelOpen = !state.editor.isPanelOpen;
+        const isPanelOpen = !state.editor.isPanelOpen;
+        state.viewport = {
+          ...state.viewport,
+        };
+        state.editor.isPanelOpen = isPanelOpen;
+        state.editor.padding = {
+          right: isPanelOpen ? 300 : 0,
+        };
       }),
     );
+    this.syncCamera();
   };
 
   public backToEditor = () => {

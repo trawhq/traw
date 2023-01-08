@@ -63,6 +63,10 @@ export enum AnimationType {
   DRAW = 'DRAW',
 }
 
+export type TREditorPadding = {
+  right: number;
+};
+
 export type TrawSnapshot = {
   player: {
     mode: PlayModeType;
@@ -89,6 +93,7 @@ export type TrawSnapshot = {
   };
   editor: {
     isPanelOpen: boolean;
+    padding: TREditorPadding;
   };
   viewport: TRViewport;
   records: Record<string, TRRecord>;
