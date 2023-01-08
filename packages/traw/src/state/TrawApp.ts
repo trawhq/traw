@@ -1092,10 +1092,15 @@ export class TrawApp {
   public playBlock(blockId: string) {
     const block = this.store.getState().blocks[blockId || ''];
     if (!block) return;
-    if (block.voices.length === 0) return;
 
     const playableVoice = this.getPlayableVoice(block);
-    if (!playableVoice) return;
+    if (!playableVoice) {
+      const nextBlock = this._getNextBlock(blockId);
+      if (nextBlock) {
+        this.playBlock(nextBlock.id);
+      }
+      return;
+    }
 
     if (this.audioInstance) {
       this.audioInstance.stop();
@@ -1206,7 +1211,7 @@ export class TrawApp {
   };
 
   private _getNextBlock = (blockId: string): TRBlock | undefined => {
-    const blocks = Object.values(this.store.getState().blocks);
+    const blocks = Object.values(this.store.getState().blocks).filter((b) => this.getPlayableVoice(b));
     const sortedBlocks = blocks.sort((a, b) => a.time - b.time);
     const index = sortedBlocks.findIndex((b) => b.id === blockId);
     return sortedBlocks[index + 1];
