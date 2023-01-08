@@ -4,14 +4,14 @@ import React, { useCallback, useEffect, useMemo } from 'react';
 
 import { CursorComponent, Renderer } from '@tldraw/core';
 import { TDCallbacks } from '@tldraw/tldraw/dist/state';
+import { ContextMenu } from 'components/ContextMenu';
 import EditWidget from 'components/EditWidget/EditWidget';
+import TlDrawLoading from 'components/Loading/TldrawLoading';
 import { useSelection } from 'hooks/useSelection';
 import { useTldrawApp } from 'hooks/useTldrawApp';
 import { ErrorBoundary as _Errorboundary } from 'react-error-boundary';
 import { styled } from 'stitches.config';
 import { PlayModeType } from 'types';
-import { ContextMenu } from 'components/ContextMenu';
-import TlDrawLoading from 'components/Loading/TldrawLoading';
 import AnimationFactory from './AnimationFactory';
 
 const ErrorBoundary = _Errorboundary as any;
@@ -222,6 +222,33 @@ interface InnerTldrawProps {
 
 const InnerTldraw = React.memo(function InnerTldraw({ id, autofocus, components, hideCursors }: InnerTldrawProps) {
   const app = useTldrawApp();
+
+  const state = app.useStore();
+
+  const { document, appState } = state;
+
+  const page = document.pages[appState.currentPageId];
+  if (!page) return null;
+
+  return <RendererWrapper id={id} autofocus={autofocus} components={components} hideCursors={hideCursors} />;
+});
+
+interface RendererWrapperProps {
+  id?: string;
+  autofocus: boolean;
+  components?: {
+    Cursor?: CursorComponent;
+  };
+  hideCursors?: boolean;
+}
+
+const RendererWrapper = React.memo(function RendererWrapper({
+  id,
+  autofocus,
+  components,
+  hideCursors,
+}: RendererWrapperProps) {
+  const app = useTldrawApp();
   const rWrapper = React.useRef<HTMLDivElement>(null);
 
   const state = app.useStore();
@@ -234,8 +261,7 @@ const InnerTldraw = React.memo(function InnerTldraw({ id, autofocus, components,
   const pageState = document.pageStates[page.id];
 
   const assets = document.assets;
-  const { selectedIds } = pageState;
-  const { camera } = pageState;
+  const { selectedIds, camera } = pageState;
   const { bounds } = useSelection(page, pageState, shapeUtils);
   const meta = useMemo(() => ({ isDarkMode: false }), []);
 
