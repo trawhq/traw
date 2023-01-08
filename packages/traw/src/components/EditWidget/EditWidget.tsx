@@ -1,4 +1,5 @@
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
+import { MagnifyingGlassIcon } from '@radix-ui/react-icons';
 import React from 'react';
 
 import { AlignStyle, ColorStyle, DashStyle, FontStyle, ShapeStyles, SizeStyle } from '@tldraw/tldraw';
@@ -120,6 +121,10 @@ const EditWidget = ({ camera, top, left }: EditWidgetProps) => {
     app.delete();
   }, [app]);
 
+  const handleFitScreen = React.useCallback(() => {
+    app.zoomToFit();
+  }, [app]);
+
   return (
     <div
       style={{
@@ -130,6 +135,11 @@ const EditWidget = ({ camera, top, left }: EditWidgetProps) => {
     >
       <div className="absolute -top-[52px] bg-white rounded-xl shadow-[0_10px_60px_rgba(189,188,249,0.5)]">
         <ul className="flex p-2 gap-2 items-center">
+          <li>
+            <ToolButton variant="icon" onClick={handleFitScreen}>
+              <MagnifyingGlassIcon />
+            </ToolButton>
+          </li>
           <li>
             <DropdownMenu.Root dir="ltr" modal={false}>
               <DropdownMenu.Trigger asChild id="TD-Styles">
