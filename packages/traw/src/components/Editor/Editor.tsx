@@ -416,6 +416,16 @@ const StyledLayout = styled('div', {
     '-webkit-tap-highlight-color': 'transparent',
     'tap-highlight-color': 'transparent',
   },
+
+  // Fix text color to be black in shapes
+  '& [data-shape="rectangle"], [data-shape="triangle"], [data-shape="ellipse"]': {
+    '& div': {
+      color: 'rgb(29, 29, 29) !important',
+      '& textarea': {
+        color: 'rgb(29, 29, 29) !important',
+      },
+    },
+  },
 });
 
 const OneOff = React.memo(function OneOff({
