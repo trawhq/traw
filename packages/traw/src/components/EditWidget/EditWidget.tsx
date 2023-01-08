@@ -25,6 +25,7 @@ import SvgTrash from 'icons/Trash';
 import { fills, strokes } from 'state/shapes/shared';
 import { breakpoints } from 'utils/breakpoints';
 import { preventEvent } from 'utils/preventEvent';
+import { useTrawApp } from 'hooks';
 
 interface EditWidgetProps {
   camera: {
@@ -36,6 +37,7 @@ interface EditWidgetProps {
 }
 
 const EditWidget = ({ camera, top, left }: EditWidgetProps) => {
+  const trawApp = useTrawApp();
   const app = useTldrawApp();
 
   const theme = app.useStore(themeSelector);
@@ -122,8 +124,8 @@ const EditWidget = ({ camera, top, left }: EditWidgetProps) => {
   }, [app]);
 
   const handleFitScreen = React.useCallback(() => {
-    app.zoomToFit();
-  }, [app]);
+    trawApp.zoomToFit();
+  }, [trawApp]);
 
   return (
     <div
