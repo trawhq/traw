@@ -124,7 +124,7 @@ const EditWidget = ({ camera, top, left }: EditWidgetProps) => {
   }, [app]);
 
   const handleFitScreen = React.useCallback(() => {
-    trawApp.zoomToFit();
+    trawApp.zoomToSelection();
   }, [trawApp]);
 
   return (

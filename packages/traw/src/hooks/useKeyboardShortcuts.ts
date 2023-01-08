@@ -349,7 +349,7 @@ export function useKeyboardShortcuts(ref: React.RefObject<HTMLDivElement>) {
     'shift+1',
     () => {
       if (!canHandleEvent(true)) return;
-      app.zoomToFit();
+      trawApp.zoomToFit();
     },
     undefined,
     [app],
@@ -359,7 +359,7 @@ export function useKeyboardShortcuts(ref: React.RefObject<HTMLDivElement>) {
     'shift+2',
     () => {
       if (!canHandleEvent(true)) return;
-      app.zoomToSelection();
+      trawApp.zoomToSelection();
     },
     undefined,
     [app],

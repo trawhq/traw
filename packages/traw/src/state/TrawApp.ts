@@ -368,12 +368,57 @@ export class TrawApp {
     this.syncCamera();
   };
 
+  zoomToSelection = () => {
+    const FIT_TO_SCREEN_PADDING = 100;
+    const { selectedIds, shapes } = this.app;
+    const padding = this.store.getState().editor.padding;
+
+    const selectedShapes = shapes.filter((shape) => selectedIds.includes(shape.id));
+    if (selectedShapes.length === 0) return this;
+    const { rendererBounds } = this.app;
+
+    const getExpandedBounds = function (a: TLBounds, b: TLBounds): TLBounds {
+      const minX = Math.min(a.minX, b.minX);
+      const minY = Math.min(a.minY, b.minY);
+      const maxX = Math.max(a.maxX, b.maxX);
+      const maxY = Math.max(a.maxY, b.maxY);
+      const width = Math.abs(maxX - minX);
+      const height = Math.abs(maxY - minY);
+
+      return { minX, minY, maxX, maxY, width, height };
+    };
+
+    const getCommonBounds = function (bounds: TLBounds[]): TLBounds {
+      if (bounds.length < 2) return bounds[0];
+
+      let result = bounds[0];
+
+      for (let i = 1; i < bounds.length; i++) {
+        result = getExpandedBounds(result, bounds[i]);
+      }
+
+      return result;
+    };
+
+    const commonBounds = getCommonBounds(selectedShapes.map(TLDR.getBounds));
+    const zoom = TLDR.getCameraZoom(
+      Math.min(
+        (rendererBounds.width - FIT_TO_SCREEN_PADDING - padding.right) / commonBounds.width,
+        (rendererBounds.height - FIT_TO_SCREEN_PADDING) / commonBounds.height,
+      ),
+    );
+    const mx = (rendererBounds.width - commonBounds.width * zoom) / 2 / zoom;
+    const my = (rendererBounds.height - commonBounds.height * zoom) / 2 / zoom;
+    return this.app.setCamera(
+      Vec.toFixed(Vec.sub([mx, my], [commonBounds.minX + padding.right / 2 / zoom, commonBounds.minY])),
+      zoom,
+      `zoomed_to_selection`,
+    );
+  };
+
   zoomToFit = () => {
     const FIT_TO_SCREEN_PADDING = 100;
-    const {
-      shapes,
-      pageState: { camera },
-    } = this.app;
+    const { shapes } = this.app;
     const padding = this.store.getState().editor.padding;
 
     if (shapes.length === 0) return this;
@@ -403,13 +448,12 @@ export class TrawApp {
     };
 
     const commonBounds = getCommonBounds(shapes.map(TLDR.getBounds));
-    let zoom = TLDR.getCameraZoom(
+    const zoom = TLDR.getCameraZoom(
       Math.min(
-        (rendererBounds.width - FIT_TO_SCREEN_PADDING - padding.right / camera.zoom) / commonBounds.width,
+        (rendererBounds.width - FIT_TO_SCREEN_PADDING - padding.right) / commonBounds.width,
         (rendererBounds.height - FIT_TO_SCREEN_PADDING) / commonBounds.height,
       ),
     );
-    zoom = camera.zoom === zoom || camera.zoom < 1 ? Math.min(1, zoom) : zoom;
     const mx = (rendererBounds.width - commonBounds.width * zoom) / 2 / zoom;
     const my = (rendererBounds.height - commonBounds.height * zoom) / 2 / zoom;
     return this.app.setCamera(
