@@ -33,6 +33,14 @@ export const BlockPanelDesktop = ({ handlePlayClick, components }: BlockPanelPro
     }
   }, [showEmptyDocumentPopup, isRecording]);
 
+  useEffect(() => {
+    if (panelOpen) {
+      app.setPadding({ right: 300 });
+    } else {
+      app.setPadding({ right: 0 });
+    }
+  }, [app, panelOpen]);
+
   const closeEmptyDocumentPopup = () => {
     setCloseEmptyPopupForever(true);
   };

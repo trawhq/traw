@@ -179,9 +179,7 @@ export class TrawApp {
       },
       editor: {
         isPanelOpen,
-        padding: {
-          right: isPanelOpen ? 300 : 0,
-        },
+        padding: { right: 0 },
       },
       viewport: {
         width: 0,
@@ -1212,8 +1210,17 @@ export class TrawApp {
           ...state.viewport,
         };
         state.editor.isPanelOpen = isPanelOpen;
+      }),
+    );
+    this.syncCamera();
+  };
+
+  setPadding = (padding: Partial<TREditorPadding>) => {
+    this.store.setState(
+      produce((state) => {
         state.editor.padding = {
-          right: isPanelOpen ? 300 : 0,
+          ...state.editor.padding,
+          ...padding,
         };
       }),
     );
