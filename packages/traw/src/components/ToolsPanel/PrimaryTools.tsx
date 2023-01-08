@@ -1,4 +1,4 @@
-import { ArrowTopRightIcon, CursorArrowIcon, ImageIcon, Pencil1Icon, TextIcon } from '@radix-ui/react-icons';
+import { ArrowTopRightIcon, CursorArrowIcon, ImageIcon, Pencil1Icon, TextIcon, PlusIcon } from '@radix-ui/react-icons';
 import * as React from 'react';
 import { breakpoints } from 'utils/breakpoints';
 
@@ -134,7 +134,7 @@ export const PrimaryTools = React.memo(function PrimaryTools() {
         <Pencil2Icon />
       </ToolButtonWithTooltip> */}
       <ToolButtonWithTooltip variant="primary" label={'image'} onClick={uploadMedias} id="TD-PrimaryTools-Image">
-        <ImageIcon />
+        <PlusIcon />
       </ToolButtonWithTooltip>
       <Separator.Root className="SeparatorRoot mx-2 my-1 w-[2px]  bg-traw-grey" decorative orientation="vertical" />
       <ToolButtonWithTooltip label={'undo'} onClick={undo} id="TD-PrimaryTools-Undo" variant="undo">
