@@ -1,4 +1,4 @@
-import { ArrowTopRightIcon, CursorArrowIcon, ImageIcon, Pencil1Icon, TextIcon, PlusIcon } from '@radix-ui/react-icons';
+import { ArrowTopRightIcon, CursorArrowIcon, Pencil1Icon, PlusIcon, TextIcon } from '@radix-ui/react-icons';
 import * as React from 'react';
 import { breakpoints } from 'utils/breakpoints';
 
@@ -8,14 +8,14 @@ import { useTldrawApp } from 'hooks/useTldrawApp';
 import { TDShapeType, TDSnapshot } from '@tldraw/tldraw';
 import { Panel } from 'components/Primitives/Panel';
 import { ToolButtonWithTooltip } from 'components/Primitives/ToolButton';
+import { useTrawApp } from 'hooks';
+import useDeviceDetect from 'hooks/useDeviceDetect';
 import { EraserIcon } from 'icons/eraser';
 import { UndoIcon } from 'icons/undo';
 import { styled } from 'stitches.config';
+import { ActionButton } from './ActionButton';
 import { ShapesMenu } from './ShapesMenu';
 import { StyleMenu } from './StyleMenu';
-import { ActionButton } from './ActionButton';
-import useDeviceDetect from 'hooks/useDeviceDetect';
-import { useTrawApp } from 'hooks';
 
 const activeToolSelector = (s: TDSnapshot) => s.appState.activeTool;
 const toolLockedSelector = (s: TDSnapshot) => s.appState.isToolLocked;
