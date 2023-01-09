@@ -424,7 +424,9 @@ export class TrawApp {
 
     const { playAs } = player;
     const targetUserId = playAs || this.editorId;
-    const currentPageId = camera[targetUserId].targetSlideId;
+    const cameraObj = camera[targetUserId];
+    if (!cameraObj) return;
+    const currentPageId = cameraObj.targetSlideId;
     if (!currentPageId) return;
 
     const { padding } = editor;
