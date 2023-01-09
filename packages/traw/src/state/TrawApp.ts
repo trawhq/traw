@@ -862,7 +862,8 @@ export class TrawApp {
     animationIds.forEach((id) => {
       const animation = animations[id];
       const progress = (Date.now() - animation.start) / (animation.end - animation.start);
-      if (progress < 1) {
+      const page = this.app.getPage(animation.page);
+      if (progress < 1 && page && page.shapes[id]) {
         if (animation.type === AnimationType.DRAW) {
           const subPoints = animation.points?.slice(0, Math.max(animation.points.length * progress, 1));
           let minY = Infinity;
@@ -877,8 +878,8 @@ export class TrawApp {
                 [animation.page]: {
                   shapes: {
                     [id]: {
-                      points: subPoints,
-                      point: [animation.point[0] - minX, animation.point[1] - minY],
+                      points: subPoints?.map(([x, y, z]) => [x - minX, y - minY, z]),
+                      point: [animation.point[0] + minX, animation.point[1] + minY],
                     },
                   },
                 },
