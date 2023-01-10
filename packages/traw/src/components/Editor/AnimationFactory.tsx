@@ -16,6 +16,9 @@ const Wrapper = styled('div', {
           transition: 'all 0.5s ease-out',
           animation: 'fadeIn 0.5s',
         },
+        '& [data-shape="draw"]': {
+          transition: 'none',
+        },
       },
       isNotPlay: {},
     },
