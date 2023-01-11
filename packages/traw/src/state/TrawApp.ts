@@ -1173,7 +1173,6 @@ export class TrawApp {
   private audioInstance: Howl | undefined;
 
   public playBlock(blockId: string) {
-    console.log(blockId);
     const block = this.store.getState().blocks[blockId || ''];
     if (!block) return;
 
@@ -1218,7 +1217,6 @@ export class TrawApp {
   }
 
   public playFromFirstBlock = () => {
-    console.log('playFromFirstBlock');
     const blocks = Object.values(this.store.getState().blocks).sort((a, b) => a.time - b.time);
     if (blocks.length === 0) return;
     const firstBlock = blocks[0];
