@@ -229,6 +229,7 @@ const InnerTldraw = React.memo(function InnerTldraw({ id, autofocus, components,
 
   const page = document.pages[appState.currentPageId];
   if (!page) return null;
+  if (!document.pageStates[page.id]) return null;
 
   return <RendererWrapper id={id} autofocus={autofocus} components={components} hideCursors={hideCursors} />;
 });
