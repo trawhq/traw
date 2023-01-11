@@ -6,7 +6,7 @@ import HansCollaborationAnimation from 'static/json/hands-collaboration.json';
 const EmptyContents = () => {
   return (
     <>
-      <div className="text-traw-purple text-[15px] text-center font-['EliceDigitalBaeum']">
+      <div className="text-traw-purple text-[15px] text-center">
         From video recording to editing and sharing.
         <br />
         Draw and explain anywhere.

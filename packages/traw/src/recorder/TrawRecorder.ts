@@ -122,6 +122,11 @@ export class TrawRecorder {
     }
   };
 
+  public changeSpeechRecognitionLanguage = (lang: string): void => {
+    this._trawSpeechRecognizer.changeLanguage(lang);
+    this._trawVoiceBlockGenerator.changeSpeechRecognitionLanguage(lang);
+  };
+
   private _onChangeMediaStream = (mediaStream?: MediaStream) => {
     this._trawVoiceRecorder.updateMediaStream(mediaStream);
     this._trawTalkingDetector.updateMediaStream(mediaStream);

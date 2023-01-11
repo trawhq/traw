@@ -10,7 +10,7 @@ import { breakpoints } from 'utils/breakpoints';
 
 export const SlideListPanelDesktop = React.memo(function SlideListPanelDesktop() {
   const slideRef = React.useRef<Record<string, HTMLElement>>({});
-  const [panelOpen, setPanelOpen] = React.useState(true);
+  const [panelOpen, setPanelOpen] = React.useState(false);
 
   const app = useTrawApp();
   const tldrawApp = useTldrawApp();
@@ -31,6 +31,20 @@ export const SlideListPanelDesktop = React.memo(function SlideListPanelDesktop()
   const handleAddSlide = () => {
     app.createSlide();
   };
+
+  // hide panel after 5 seconds
+  React.useEffect(() => {
+    if (!panelOpen) return;
+    const close = () => {
+      setPanelOpen(false);
+    };
+
+    const timer = setTimeout(close, 10000);
+
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [panelOpen]);
 
   const togglePanel = () => setPanelOpen(!panelOpen);
   return (

@@ -34,6 +34,7 @@ export interface TrawProps {
   functions?: {
     handleChangeDocumentTitle?: (newValue: string) => void;
     handleNavigateHome?: () => void;
+    handleLanguageClick?: () => void;
   };
 }
 
@@ -74,6 +75,15 @@ const Traw = ({ app, document, components, functions }: TrawProps) => {
     [trawApp],
   );
 
+  const { speechRecognitionLanguage } = trawApp.useStore((state) => state.recording);
+  const handleLanguageClickDefault = useCallback(() => {
+    if (speechRecognitionLanguage === 'en-US') {
+      trawApp.setSpeechRecognitionLanguage('ko-KR');
+    } else {
+      trawApp.setSpeechRecognitionLanguage('en-US');
+    }
+  }, [speechRecognitionLanguage, trawApp]);
+
   // Use the `key` to ensure that new selector hooks are made when the id changes
   return (
     <TrawContext.Provider value={trawApp}>
@@ -90,6 +100,7 @@ const Traw = ({ app, document, components, functions }: TrawProps) => {
           {!isPlayerMode && (
             <BlockPanel
               handlePlayClick={handlePlayClick}
+              handleLanguageClick={functions?.handleLanguageClick ?? handleLanguageClickDefault}
               components={{
                 EmptyVoiceNote: components?.EmptyVoiceNote,
                 EmptyDocumentPopup: components?.EmptyDocumentPopup,

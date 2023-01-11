@@ -16,7 +16,7 @@ export interface TrawSpeechRecognizerOptions {
 }
 
 export class TrawSpeechRecognizer {
-  private readonly _lang: string;
+  private _lang: string;
 
   /**
    * Speech recognizer
@@ -77,6 +77,16 @@ export class TrawSpeechRecognizer {
       this._instance += 1;
       this._lastIndex = -1;
       this._isRunning = false;
+    }
+  }
+
+  /**
+   * Change Language
+   */
+  public changeLanguage(lang: string) {
+    this._lang = lang;
+    if (this._isRunning) {
+      this.restartRecognition();
     }
   }
 

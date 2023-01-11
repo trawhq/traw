@@ -9,9 +9,10 @@ import { StatusBar } from './StatusBar';
 import { StyleMenu } from './StyleMenu';
 import { useTrawApp } from 'hooks';
 import { PlayModeType } from 'types';
-import Player from './Player';
+import Player from './Player/Player';
 import { ActionButton } from './ActionButton';
 import useDeviceDetect from 'hooks/useDeviceDetect';
+import Subtitle from './Player/Subtitle';
 
 const isDebugModeSelector = (s: TDSnapshot) => s.settings.isDebugMode;
 const dockPositionState = (s: TDSnapshot) => s.settings.dockPosition;
@@ -47,6 +48,8 @@ export const ToolsPanel = React.memo(function ToolsPanel({ onBlur }: ToolsPanelP
           <Player />
         )}
       </StyledToolsPanelContainer>
+
+      {!isEdit && <Subtitle />}
       {isDebugMode && (
         <StyledStatusWrap>
           <StatusBar />

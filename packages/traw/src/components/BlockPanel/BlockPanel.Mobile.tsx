@@ -6,21 +6,29 @@ import { styled } from 'stitches.config';
 import PanelFooter from './PanelFooter';
 import PanelHeader from './PanelHeader';
 
-export interface BlockPanelProps {
+export interface BlockPanelMobileProps {
   handlePlayClick: (blockId?: string) => void;
   handleCreateTextBlock: (text: string) => void;
+  handleLanguageClick?: () => void;
   components?: {
     EmptyVoiceNote?: ReactNode;
     EmptyDocumentPopup?: ReactNode;
   };
 }
 
-export const BlockPanelMobile = ({ handlePlayClick, handleCreateTextBlock, components }: BlockPanelProps) => {
+export const BlockPanelMobile = ({
+  handlePlayClick,
+  handleCreateTextBlock,
+  handleLanguageClick,
+  components,
+}: BlockPanelMobileProps) => {
   const app = useTrawApp();
   const panelOpen = app.useStore((state) => state.editor.isPanelOpen);
   const totalTime = app.useStore((state) => state.player.totalTime);
 
-  const { isRecording, isTalking, recognizedText } = app.useStore((state) => state.recording);
+  const { isRecording, isTalking, recognizedText, speechRecognitionLanguage } = app.useStore(
+    (state) => state.recording,
+  );
 
   const { isBrowser } = useDeviceDetect();
 
@@ -55,8 +63,10 @@ export const BlockPanelMobile = ({ handlePlayClick, handleCreateTextBlock, compo
             <PanelFooter
               isRecording={isRecording}
               isTalking={isTalking}
+              speechRecognitionLanguage={speechRecognitionLanguage}
               recognizedText={recognizedText}
               onCreate={handleCreateTextBlock}
+              onClickSpeechRecognitionLanguage={handleLanguageClick}
             />
           )}
         </>

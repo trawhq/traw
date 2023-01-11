@@ -103,8 +103,6 @@ export class TrawApp {
 
   editorId: string;
 
-  speechRecognitionLanguage: string;
-
   viewportSize = {
     width: 0,
     height: 0,
@@ -165,7 +163,6 @@ export class TrawApp {
 
   constructor({ user, document, records = [], speechRecognitionLanguage = 'ko-KR', playerOptions }: TrawAppOptions) {
     this.editorId = user.id;
-    this.speechRecognitionLanguage = speechRecognitionLanguage;
 
     const mode = playerOptions?.autoPlay
       ? PlayModeType.PLAYING
@@ -204,6 +201,7 @@ export class TrawApp {
         isRecording: false,
         isMuted: false,
         isTalking: false,
+        speechRecognitionLanguage,
         recognizedText: '',
         startedAt: 0,
       },
@@ -233,7 +231,7 @@ export class TrawApp {
 
     this.registerApp(this.app);
 
-    this.applyRecordsFromFirst();
+    this.applyRecords();
 
     if (TrawRecorder.isSupported()) {
       this._trawRecorder = new TrawRecorder({
@@ -302,7 +300,7 @@ export class TrawApp {
     };
 
     this.app = app;
-    this.applyRecordsFromFirst();
+    this.applyRecords();
     this.emit(TrawEventType.TldrawAppChange, { tldrawApp: app });
   }
 
@@ -707,16 +705,31 @@ export class TrawApp {
         });
       }),
     );
-    this.applyRecords(newRecords);
+    this.applyRecords();
   };
 
-  applyRecordsFromFirst = () => {
-    const records = Object.values(this.store.getState().records).sort((a, b) => a.start - b.start);
+  get sortedRecords() {
+    return Object.values(this.store.getState().records).sort((a, b) => a.start - b.start);
+  }
 
-    this.applyRecords(records);
-  };
+  get sortedBlocks() {
+    return Object.values(this.store.getState().blocks).sort((a, b) => a.time - b.time);
+  }
 
-  applyRecords = (records: TRRecord[], animation?: { current: number }) => {
+  applyRecords = (index?: number, animation?: { current: number }) => {
+    const sortedRecords = this.sortedRecords;
+
+    if (!index) index = sortedRecords.length - 1;
+
+    let startIndex = this.pointer;
+    if (this.pointer > index) {
+      this.app.resetDocument();
+      startIndex = -1;
+      console.log('reset');
+    }
+
+    const records = sortedRecords.slice(startIndex + 1, index);
+
     let isCameraChanged = false;
     records
       .sort((a, b) => a.start - b.start)
@@ -898,7 +911,9 @@ export class TrawApp {
     if (animation) this.applyAnimation();
 
     this.removeDefaultPage();
-    this.pointer += records.length;
+
+    this.pointer = index;
+
     if (isCameraChanged) {
       this.syncCamera();
     }
@@ -1048,6 +1063,15 @@ export class TrawApp {
     );
   };
 
+  setSpeechRecognitionLanguage = (lang: string) => {
+    this._trawRecorder?.changeSpeechRecognitionLanguage(lang);
+    this.store.setState(
+      produce((state: TrawSnapshot) => {
+        state.recording.speechRecognitionLanguage = lang;
+      }),
+    );
+  };
+
   private handleAssetCreate = async (app: TldrawApp, file: File, id: string): Promise<string | false> => {
     if (this.onAssetCreate) {
       return await this.onAssetCreate(app, file, id);
@@ -1172,6 +1196,15 @@ export class TrawApp {
 
   private audioInstance: Howl | undefined;
 
+  private applyRecordsToTime = (time: number) => {
+    const records = this.sortedRecords.filter((r) => r.start <= time);
+
+    const pointer = records.filter((r) => r.start <= time).length - 1;
+
+    if (pointer < 0) return;
+    this.applyRecords(pointer, { current: time });
+  };
+
   public playBlock(blockId: string) {
     const block = this.store.getState().blocks[blockId || ''];
     if (!block) return;
@@ -1189,8 +1222,6 @@ export class TrawApp {
       this.audioInstance.stop();
     }
 
-    this.app.resetDocument();
-    this.pointer = -1;
     // TODO (Changje, 2022-12-24) - Reimplement it to support preloading
     const howl = new Howl({
       src: [playableVoice.url],
@@ -1217,7 +1248,7 @@ export class TrawApp {
   }
 
   public playFromFirstBlock = () => {
-    const blocks = Object.values(this.store.getState().blocks).sort((a, b) => a.time - b.time);
+    const blocks = this.sortedBlocks;
     if (blocks.length === 0) return;
     const firstBlock = blocks[0];
     this.playBlock(firstBlock.id);
@@ -1288,9 +1319,8 @@ export class TrawApp {
         };
       }),
     );
-    this.app.resetDocument();
 
-    this.applyRecordsFromFirst();
+    this.applyRecords();
   };
 
   private _getNextBlock = (blockId: string): TRBlock | undefined => {
@@ -1330,12 +1360,7 @@ export class TrawApp {
         const targetBlock = this.store.getState().blocks[player.targetBlockId || ''];
         if (!targetBlock) return;
         const currentTime = targetBlock.time + fromBlockStart;
-        const records = Object.values(this.store.getState().records)
-          .sort((a, b) => a.start - b.start)
-          .filter((r) => r.start <= currentTime);
-        const afterPointer = records.length;
-        this.applyRecords(records.slice(this.pointer + 1), { current: currentTime });
-        this.pointer = afterPointer - 1;
+        this.applyRecordsToTime(currentTime);
 
         this.playInterval = requestAnimationFrame(this._handlePlay);
         this.applyAnimation();
