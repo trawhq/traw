@@ -202,6 +202,7 @@ export class TrawApp {
       },
       recording: {
         isRecording: false,
+        isMuted: false,
         isTalking: false,
         recognizedText: '',
         startedAt: 0,
@@ -1025,6 +1026,24 @@ export class TrawApp {
       produce((state: TrawSnapshot) => {
         state.recording.isRecording = false;
         state.recording.startedAt = 0;
+      }),
+    );
+  };
+
+  mute = () => {
+    this._trawRecorder?.mute();
+    this.store.setState(
+      produce((state: TrawSnapshot) => {
+        state.recording.isMuted = true;
+      }),
+    );
+  };
+
+  unmute = () => {
+    this._trawRecorder?.unmute();
+    this.store.setState(
+      produce((state: TrawSnapshot) => {
+        state.recording.isMuted = false;
       }),
     );
   };

@@ -109,13 +109,17 @@ export class TrawRecorder {
   };
 
   public mute = (): void => {
-    this._mediaStreamManager.muteMediaStream();
-    this._trawSpeechRecognizer.stopRecognition();
+    if (!this.isMuted) {
+      this._mediaStreamManager.muteMediaStream();
+      this._trawSpeechRecognizer.stopRecognition();
+    }
   };
 
   public unmute = (): void => {
-    this._mediaStreamManager.unmuteMediaStream();
-    this._trawSpeechRecognizer.startRecognition();
+    if (this.isMuted) {
+      this._mediaStreamManager.unmuteMediaStream();
+      this._trawSpeechRecognizer.startRecognition();
+    }
   };
 
   private _onChangeMediaStream = (mediaStream?: MediaStream) => {

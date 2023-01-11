@@ -100,6 +100,7 @@ export type TrawSnapshot = {
   blocks: Record<string, TRBlock>;
   recording: {
     isRecording: boolean;
+    isMuted: boolean;
     isTalking: boolean;
     recognizedText: string;
     startedAt: number;

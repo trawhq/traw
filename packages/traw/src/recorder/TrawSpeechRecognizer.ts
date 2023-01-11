@@ -27,6 +27,8 @@ export class TrawSpeechRecognizer {
   private _lastIndex: number;
   private _currentSentence: string;
 
+  private _isRunning: boolean;
+
   public onRecognized?: onRecognizedHandler;
 
   constructor({ lang, onRecognized }: TrawSpeechRecognizerOptions) {
@@ -37,6 +39,7 @@ export class TrawSpeechRecognizer {
     this._instance = 0;
     this._lastIndex = -1;
     this._currentSentence = '';
+    this._isRunning = false;
 
     this._speechRecognition = this.initSpeechRecognition();
 
@@ -54,14 +57,18 @@ export class TrawSpeechRecognizer {
     if (!this._speechRecognition) {
       this._speechRecognition = this.initSpeechRecognition();
     }
-    this._speechRecognition.start();
+
+    if (!this._isRunning) {
+      this._speechRecognition.start();
+      this._isRunning = true;
+    }
   };
 
   /**
    * Stops speech recognition
    */
   public stopRecognition() {
-    if (this._speechRecognition) {
+    if (this._speechRecognition && this._isRunning) {
       this._speechRecognition.removeEventListener('result', this.onResult);
       this._speechRecognition.removeEventListener('end', this.onEnd);
       this._speechRecognition.removeEventListener('error', this.onError);
@@ -69,6 +76,7 @@ export class TrawSpeechRecognizer {
       this._speechRecognition = undefined;
       this._instance += 1;
       this._lastIndex = -1;
+      this._isRunning = false;
     }
   }
 
