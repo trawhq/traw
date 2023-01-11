@@ -9,7 +9,7 @@ import { StatusBar } from './StatusBar';
 import { StyleMenu } from './StyleMenu';
 import { useTrawApp } from 'hooks';
 import { PlayModeType } from 'types';
-import Player from './Player';
+import Player from './Player/Player';
 import { ActionButton } from './ActionButton';
 import useDeviceDetect from 'hooks/useDeviceDetect';
 

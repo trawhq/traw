@@ -213,4 +213,11 @@ export class TrawVoiceBlockGenerator {
       file: file,
     });
   };
+
+  /**
+   * Change Language
+   */
+  public readonly changeSpeechRecognitionLanguage = (lang: string) => {
+    this._speechRecognitionLanguage = lang;
+  };
 }

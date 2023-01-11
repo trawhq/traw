@@ -103,8 +103,6 @@ export class TrawApp {
 
   editorId: string;
 
-  speechRecognitionLanguage: string;
-
   viewportSize = {
     width: 0,
     height: 0,
@@ -165,7 +163,6 @@ export class TrawApp {
 
   constructor({ user, document, records = [], speechRecognitionLanguage = 'ko-KR', playerOptions }: TrawAppOptions) {
     this.editorId = user.id;
-    this.speechRecognitionLanguage = speechRecognitionLanguage;
 
     const mode = playerOptions?.autoPlay
       ? PlayModeType.PLAYING
@@ -204,6 +201,7 @@ export class TrawApp {
         isRecording: false,
         isMuted: false,
         isTalking: false,
+        speechRecognitionLanguage,
         recognizedText: '',
         startedAt: 0,
       },
@@ -1061,6 +1059,15 @@ export class TrawApp {
     this.store.setState(
       produce((state: TrawSnapshot) => {
         state.recording.isMuted = false;
+      }),
+    );
+  };
+
+  setSpeechRecognitionLanguage = (lang: string) => {
+    this._trawRecorder?.changeSpeechRecognitionLanguage(lang);
+    this.store.setState(
+      produce((state: TrawSnapshot) => {
+        state.recording.speechRecognitionLanguage = lang;
       }),
     );
   };

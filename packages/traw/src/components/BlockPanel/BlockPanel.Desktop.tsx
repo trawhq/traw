@@ -6,16 +6,22 @@ import EmptyDocumentPopup from './EmptyDocumentPopup';
 import PanelFooter from './PanelFooter';
 import PanelHeader from './PanelHeader';
 
-export interface BlockPanelProps {
+export interface BlockPanelDesktopProps {
   handlePlayClick: (blockId?: string) => void;
   handleCreateTextBlock: (text: string) => void;
+  handleLanguageClick?: () => void;
   components?: {
     EmptyVoiceNote?: ReactNode;
     EmptyDocumentPopup?: ReactNode;
   };
 }
 
-export const BlockPanelDesktop = ({ handlePlayClick, handleCreateTextBlock, components }: BlockPanelProps) => {
+export const BlockPanelDesktop = ({
+  handlePlayClick,
+  handleCreateTextBlock,
+  handleLanguageClick,
+  components,
+}: BlockPanelDesktopProps) => {
   const [closeEmptyPopupForever, setCloseEmptyPopupForever] = useState(false);
 
   const app = useTrawApp();
@@ -24,7 +30,9 @@ export const BlockPanelDesktop = ({ handlePlayClick, handleCreateTextBlock, comp
 
   const blocks = app.useStore((state) => state.blocks);
   const isEmptyBlock = Object.keys(blocks).length === 0;
-  const { isRecording, isTalking, recognizedText } = app.useStore((state) => state.recording);
+  const { isRecording, isTalking, recognizedText, speechRecognitionLanguage } = app.useStore(
+    (state) => state.recording,
+  );
 
   const showEmptyDocumentPopup = isEmptyBlock && components?.EmptyDocumentPopup && !closeEmptyPopupForever;
 
@@ -74,8 +82,10 @@ export const BlockPanelDesktop = ({ handlePlayClick, handleCreateTextBlock, comp
               <PanelFooter
                 isRecording={isRecording}
                 isTalking={isTalking}
+                speechRecognitionLanguage={speechRecognitionLanguage}
                 recognizedText={recognizedText}
                 onCreate={handleCreateTextBlock}
+                onClickSpeechRecognitionLanguage={handleLanguageClick}
               />
             )}
           </>

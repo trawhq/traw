@@ -8,16 +8,19 @@ import BlockPanelMobile from './BlockPanel.Mobile';
 
 export interface BlockPanelProps {
   handlePlayClick: (blockId?: string) => void;
+  handleLanguageClick?: () => void;
   components?: {
     EmptyVoiceNote?: ReactNode;
     EmptyDocumentPopup?: ReactNode;
   };
 }
 
-export const BlockPanel = ({ handlePlayClick, components }: BlockPanelProps) => {
+export const BlockPanel = ({ handlePlayClick, handleLanguageClick, components }: BlockPanelProps) => {
   const { isBrowser } = useDeviceDetect();
 
   const app = useTrawApp();
+
+  const { speechRecognitionLanguage } = app.useStore((state) => state.recording);
 
   const handleCreateTextBlock = (text: string) => {
     const block: TRBlock = {
@@ -25,7 +28,7 @@ export const BlockPanel = ({ handlePlayClick, components }: BlockPanelProps) => 
       type: TRBlockType.TALK,
       time: Date.now(),
       userId: app.editorId,
-      lang: app.speechRecognitionLanguage,
+      lang: speechRecognitionLanguage,
 
       text,
       isActive: true,
@@ -40,12 +43,14 @@ export const BlockPanel = ({ handlePlayClick, components }: BlockPanelProps) => 
     <BlockPanelDesktop
       handlePlayClick={handlePlayClick}
       handleCreateTextBlock={handleCreateTextBlock}
+      handleLanguageClick={handleLanguageClick}
       components={components}
     />
   ) : (
     <BlockPanelMobile
       handlePlayClick={handlePlayClick}
       handleCreateTextBlock={handleCreateTextBlock}
+      handleLanguageClick={handleLanguageClick}
       components={components}
     />
   );

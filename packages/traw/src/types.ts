@@ -102,6 +102,7 @@ export type TrawSnapshot = {
     isRecording: boolean;
     isMuted: boolean;
     isTalking: boolean;
+    speechRecognitionLanguage: string;
     recognizedText: string;
     startedAt: number;
   };

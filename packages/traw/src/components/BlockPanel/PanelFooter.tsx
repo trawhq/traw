@@ -4,15 +4,25 @@ import SpeechViewer from 'components/BlockPanel/SpeechViewer';
 import { SpeakingIndicator } from 'components/Indicator';
 import React, { useState } from 'react';
 import SvgSend from '../../icons/send';
+import { getCountryFlagByLocale } from 'utils/countryFlag';
 
 export interface PanelFooterProps {
   isRecording: boolean;
   isTalking: boolean;
   recognizedText: string;
+  speechRecognitionLanguage: string;
   onCreate: (text: string) => void;
+  onClickSpeechRecognitionLanguage?: () => void;
 }
 
-export const PanelFooter = ({ isRecording, isTalking, recognizedText, onCreate }: PanelFooterProps) => {
+export const PanelFooter = ({
+  isRecording,
+  isTalking,
+  recognizedText,
+  speechRecognitionLanguage,
+  onCreate,
+  onClickSpeechRecognitionLanguage,
+}: PanelFooterProps) => {
   const [text, setText] = useState<string | undefined>(undefined);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -33,6 +43,8 @@ export const PanelFooter = ({ isRecording, isTalking, recognizedText, onCreate }
     onCreate(text);
     setText('');
   };
+
+  const countryFlag = getCountryFlagByLocale(speechRecognitionLanguage);
 
   return (
     <footer className="mt-2 mb-2 select-none">
@@ -55,8 +67,14 @@ export const PanelFooter = ({ isRecording, isTalking, recognizedText, onCreate }
       >
         {isRecording && (
           <>
-            <div className="flex flex-row px-0.5 items-end">
+            <div className="flex flex-row px-0.5 items-center">
               <RecordingTimer className="flex-1" />
+              <button
+                className="w-7 h-7 mx-1 rounded-full text-base hover:bg-gray-100"
+                onClick={onClickSpeechRecognitionLanguage}
+              >
+                {countryFlag}
+              </button>
               <SpeakingIndicator size={17} isSpeaking={isTalking} />
             </div>
             <SpeechViewer className="max-h-16 text-xs overflow-y-scroll px-0.5" text={recognizedText} />

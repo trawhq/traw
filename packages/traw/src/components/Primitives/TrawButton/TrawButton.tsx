@@ -56,3 +56,38 @@ export const TrawButton = styled('button', {
     },
   },
 });
+
+export const TrawIconButton = styled('button', {
+  whiteSpace: 'nowrap',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  position: 'relative',
+  width: '100%',
+  cursor: 'pointer',
+  fontFamily: '$ui',
+  fontWeight: 700,
+  fontSize: '$2',
+  border: '1px solid transparent',
+  borderRadius: 50,
+
+  '&[data-disabled]': {
+    opacity: 0.3,
+  },
+
+  '&:disabled': {
+    opacity: 0.3,
+  },
+  variants: {
+    variant: {
+      primary: {
+        backgroundColor: '#726EF6',
+        color: 'white',
+      },
+      secondary: {
+        backgroundColor: '#E983B2',
+        color: 'white',
+      },
+    },
+  },
+});
